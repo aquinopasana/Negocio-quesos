@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuesoControl AI - ERP & Kardex de Existencias</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js para Reportabilidad y Predicciones -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cheese: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            700: '#a16207',
+                            800: '#854d0e',
+                            900: '#713f12',
+                            accent: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .active-tab {
+            background-color: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border-color: #eab308;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-16 md:pb-0">
+
+    <!-- HEADER MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 lg:px-8 py-3">
+        <div class="flex items-center justify-between max-w-7xl mx-auto w-full">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cheese-600 to-cheese-400 flex items-center justify-center text-slate-950 shadow-lg shadow-cheese-500/20 font-black text-xl">
+                    <i class="fa-solid fa-cheese"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold bg-gradient-to-r from-white via-amber-200 to-cheese-400 bg-clip-text text-transparent">QuesoControl AI</h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">ERP, Kardex de Existencias & IA Predictiva para Queserías</p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center space-x-2">
+                <button onclick="openAzureGuideModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-900/40 text-sky-300 border border-sky-700/50 hover:bg-sky-800/50 transition flex items-center space-x-1.5">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <i class="fa-brands fa-microsoft text-sky-400 text-sm"></i>
+                    <span class="hidden md:inline">Desplegar en Azure (Free)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 max-w-7xl w-full mx-auto overflow-hidden">
+        
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="w-64 glass-card border-r border-slate-800 hidden md:flex flex-col justify-between p-4 space-y-4">
+            <nav class="space-y-1.5" id="desktop-nav">
+                <button onclick="switchTab('sales')" id="dnav-sales" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent active-tab">
+                    <i class="fa-solid fa-cash-register text-base w-6 text-center"></i>
+                    <span>Registro de Ventas</span>
+                </button>
+                <button onclick="switchTab('purchases')" id="dnav-purchases" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-truck-ramp-box text-base w-6 text-center"></i>
+                    <span>Registro de Compras</span>
+                </button>
+                <button onclick="switchTab('kardex')" id="dnav-kardex" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-clipboard-list text-base w-6 text-center"></i>
+                    <span>Kardex de Existencias</span>
+                </button>
+                <button onclick="switchTab('analytics')" id="dnav-analytics" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-chart-line text-base w-6 text-center"></i>
+                    <span>Reportabilidad & KPIs</span>
+                </button>
+                <button onclick="switchTab('forecast')" id="dnav-forecast" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-wand-magic-sparkles text-base w-6 text-center text-amber-400"></i>
+                    <span>Predicción IA Demanda</span>
+                </button>
+            </nav>
+
+            <!-- Quick Data Demo Loader -->
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                <span class="text-slate-400 font-semibold block text-[11px]">Pruebas y Demostración</span>
+                <button onclick="loadDemoData()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg font-semibold transition text-[11px] flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Cargar Datos Ejemplo</span>
+                </button>
+                <button onclick="clearAllData()" class="w-full py-1 rounded-lg text-rose-400 hover:text-rose-300 font-semibold transition text-[10px] text-center block">
+                    Limpiar Base de Datos
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+
+            <!-- TAB 1: REGISTRO DE VENTAS (MOBILE FRIENDLY) -->
+            <section id="tab-sales" class="tab-content space-y-6">
+                <!-- Mobile Banner -->
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-cart-shopping text-cheese-400 mr-2"></i> Puntos de Venta y Despacho
+                        </h2>
+                        <p class="text-xs text-slate-400">Ingresa las ventas de queso calculando totales automáticamente por kilo.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario de Venta -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-amber-400 flex items-center border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-plus-circle mr-2"></i> Nueva Venta de Queso
+                        </h3>
+
+                        <form id="form-sale" onsubmit="handleSaleSubmit(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Fecha</label>
+                                    <input type="date" id="sale-date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Hora</label>
+                                    <input type="time" id="sale-time" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Variedad / Tipo de Queso</label>
+                                <select id="sale-cheese" required onchange="updateSalePricePreset()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                    <option value="Gouda">Queso Gouda Mantecoso</option>
+                                    <option value="Chanco">Queso Chanco Artesanal</option>
+                                    <option value="Cabra">Queso de Cabra Curado</option>
+                                    <option value="Mozzarella">Queso Mozzarella Falso/Pizzero</option>
+                                    <option value="Brie">Queso Brie / Camembert</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Peso Vendido (Kg)</label>
+                                    <input type="number" step="0.01" min="0.05" id="sale-weight" required placeholder="Ej: 1.25" oninput="calculateSaleTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Precio por Kg (CLP)</label>
+                                    <input type="number" step="100" id="sale-price-unit" required placeholder="Ej: 8500" oninput="calculateSaleTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <!-- Display Total Calculado -->
+                            <div class="bg-slate-900/90 p-3 rounded-xl border border-cheese-500/30 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400">Total Venta Calculado:</span>
+                                <span id="sale-total-display" class="text-lg font-black text-cheese-400 font-mono">$0 CLP</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Nombre del Cliente</label>
+                                    <input type="text" id="sale-customer" placeholder="Ej: Almacén San Juan" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Método Pago</label>
+                                    <select id="sale-payment" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                        <option value="Transferencia">Transferencia Banco</option>
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Tarjeta">Débito / Crédito</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cheese-600 to-cheese-500 hover:from-cheese-500 hover:to-cheese-400 text-slate-950 font-extrabold rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>Registrar Venta & Descontar Stock</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Tabla de Últimas Ventas -->
+                    <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-clock-rotate-left mr-2 text-cheese-400"></i> Histórico de Ventas
+                            </h3>
+                            <span id="sales-count-badge" class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono">0 Registros</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Fecha/Hora</th>
+                                        <th class="p-2.5">Producto</th>
+                                        <th class="p-2.5">Cliente</th>
+                                        <th class="p-2.5">Peso (Kg)</th>
+                                        <th class="p-2.5">Precio/Kg</th>
+                                        <th class="p-2.5">Total Venta</th>
+                                        <th class="p-2.5 text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-table-body" class="divide-y divide-slate-800">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: REGISTRO DE COMPRAS (PROVEEDORES) -->
+            <section id="tab-purchases" class="tab-content hidden space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-truck-ramp-box text-sky-400 mr-2"></i> Recepción de Compras de Materia Prima / Quesos
+                        </h2>
+                        <p class="text-xs text-slate-400">Ingresa las facturas o lotes recibidos de proveedores para aumentar existencias.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Formulario de Compra -->
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-sky-400 flex items-center border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-cart-plus mr-2"></i> Nueva Entrada de Queso (Compra)
+                        </h3>
+
+                        <form id="form-purchase" onsubmit="handlePurchaseSubmit(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Fecha Compra</label>
+                                    <input type="date" id="pur-date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">N° Lote / Doc</label>
+                                    <input type="text" id="pur-batch" required placeholder="LT-9942" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Proveedor / Quesería Origen</label>
+                                <input type="text" id="pur-supplier" required placeholder="Lácteos del Sur SpA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Variedad de Queso</label>
+                                <select id="pur-cheese" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                    <option value="Gouda">Queso Gouda Mantecoso</option>
+                                    <option value="Chanco">Queso Chanco Artesanal</option>
+                                    <option value="Cabra">Queso de Cabra Curado</option>
+                                    <option value="Mozzarella">Queso Mozzarella Falso/Pizzero</option>
+                                    <option value="Brie">Queso Brie / Camembert</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kilos Comprados (Kg)</label>
+                                    <input type="number" step="0.1" min="0.1" id="pur-weight" required placeholder="50.0" oninput="calculatePurchaseTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Costo por Kg (CLP)</label>
+                                    <input type="number" step="100" id="pur-cost-unit" required placeholder="5200" oninput="calculatePurchaseTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900/90 p-3 rounded-xl border border-sky-500/30 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400">Total Inversión Compra:</span>
+                                <span id="pur-total-display" class="text-lg font-black text-sky-400 font-mono">$0 CLP</span>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-boxes-packing"></i>
+                                <span>Ingresar Lote al Inventario</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Tabla de Compras -->
+                    <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-boxes-stacked mr-2 text-sky-400"></i> Registro de Lotes y Compras
+                            </h3>
+                            <span id="purchases-count-badge" class="text-xs bg-slate-900 border border-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono">0 Lotes</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Fecha</th>
+                                        <th class="p-2.5">Lote</th>
+                                        <th class="p-2.5">Proveedor</th>
+                                        <th class="p-2.5">Producto</th>
+                                        <th class="p-2.5">Kilos</th>
+                                        <th class="p-2.5">Costo/Kg</th>
+                                        <th class="p-2.5">Total Compra</th>
+                                        <th class="p-2.5 text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchases-table-body" class="divide-y divide-slate-800">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: TARJETA DE EXISTENCIAS (KARDEX CONTABLE) -->
+            <section id="tab-kardex" class="tab-content hidden space-y-6">
+                <!-- Stock Overview Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Stock Total Físico</span>
+                        <h4 id="kardex-total-weight" class="text-2xl font-black text-amber-400 font-mono mt-1">0.00 Kg</h4>
+                        <p class="text-[10px] text-slate-400 mt-1">Suma de todos los tipos de queso</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Valorización Inventario</span>
+                        <h4 id="kardex-total-valuation" class="text-2xl font-black text-emerald-400 font-mono mt-1">$0 CLP</h4>
+                        <p class="text-[10px] text-slate-400 mt-1">Basado en Costo Ponderado (PMP)</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Margen Bruto Promedio</span>
+                        <h4 id="kardex-gross-margin" class="text-2xl font-black text-sky-400 font-mono mt-1">0.0%</h4>
+                        <p class="text-[10px] text-slate-400 mt-1">Spread entre Venta y Costo</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Alertas de Stock Bajo</span>
+                        <h4 id="kardex-low-stock-alert" class="text-2xl font-black text-rose-400 font-mono mt-1">0 Tipos</h4>
+                        <p class="text-[10px] text-slate-400 mt-1">Por debajo del stock mínimo exigido</p>
+                    </div>
+                </div>
+
+                <!-- Resumen por Producto -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <h3 class="text-sm font-bold text-white flex items-center">
+                        <i class="fa-solid fa-layer-group text-cheese-400 mr-2"></i> Existencias por Variedad de Queso
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3" id="cheese-stock-grid">
+                        <!-- Inyectado por JS -->
+                    </div>
+                </div>
+
+                <!-- Tabla Kardex Integrada -->
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-receipt text-amber-400 mr-2"></i> Movimientos Registrados en Kardex (Entradas/Salidas/Saldos)
+                            </h3>
+                            <p class="text-xs text-slate-400">Tarjeta oficial de inventario sincronizada</p>
+                        </div>
+                        <select id="kardex-filter-cheese" onchange="renderKardexTable()" class="bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded-lg px-3 py-1.5 focus:outline-none">
+                            <option value="ALL">Todas las variedades</option>
+                            <option value="Gouda">Queso Gouda</option>
+                            <option value="Chanco">Queso Chanco</option>
+                            <option value="Cabra">Queso de Cabra</option>
+                            <option value="Mozzarella">Queso Mozzarella</option>
+                            <option value="Brie">Queso Brie</option>
+                        </select>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="p-2.5">Fecha</th>
+                                    <th class="p-2.5">Tipo Movimiento</th>
+                                    <th class="p-2.5">Producto</th>
+                                    <th class="p-2.5">Detalle / Tercero</th>
+                                    <th class="p-2.5 text-center bg-emerald-950/30 text-emerald-300">Entrada (Kg)</th>
+                                    <th class="p-2.5 text-center bg-rose-950/30 text-rose-300">Salida (Kg)</th>
+                                    <th class="p-2.5 text-center bg-amber-950/30 text-amber-300">Saldo Stock (Kg)</th>
+                                    <th class="p-2.5 text-right">Precio / Costo Unit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kardex-table-body" class="divide-y divide-slate-800">
+                                <!-- Dynamic Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: REPORTABILIDAD Y KPIS -->
+            <section id="tab-analytics" class="tab-content hidden space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i> Dashboard de Analytics y Rentabilidad
+                        </h2>
+                        <p class="text-xs text-slate-400">Análisis financiero comparativo entre compras y ventas de queso.</p>
+                    </div>
+                </div>
+
+                <!-- Gráficos Integrados -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-chart-area text-cheese-400 mr-2"></i> Evolución de Ventas vs Compras ($ CLP)
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="chart-revenue-cost"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-pie-chart text-sky-400 mr-2"></i> Ventas por Variedad de Queso (Kg)
+                        </h3>
+                        <div class="h-64 relative flex items-center justify-center">
+                            <canvas id="chart-cheese-distribution"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: PREDICCIÓN DE DEMANDA E IA -->
+            <section id="tab-forecast" class="tab-content hidden space-y-6">
+                <div class="glass-card p-5 rounded-2xl border border-amber-500/30 space-y-4">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Motor Predictivo de Demanda de Quesos</h2>
+                            <p class="text-xs text-slate-400">Algoritmo de estimación de agotamiento de stock y sugerencias de compra</p>
+                        </div>
+                    </div>
+
+                    <!-- Predictions Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="forecast-cards-container">
+                        <!-- Dynamic Cards per cheese -->
+                    </div>
+
+                    <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-300">
+                        <h4 class="font-bold text-amber-400 flex items-center">
+                            <i class="fa-solid fa-lightbulb mr-2"></i> ¿Cómo funciona este modelo predictivo?
+                        </h4>
+                        <p class="leading-relaxed">
+                            El sistema analiza la **velocidad diaria de venta (Kg/día)** de cada tipo de queso considerando los registros ingresados. Posteriormente, proyecta la demanda para los próximos 7 y 30 días y la contrasta contra las **existencias actuales en el Kardex** para sugerir la fecha óptima de compra a proveedores.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION (SOLO VISIBLE EN CELULARES) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass-card border-t border-slate-800 flex justify-around p-2 z-50 text-[10px]">
+        <button onclick="switchTab('sales')" id="mnav-sales" class="flex flex-col items-center p-1 text-cheese-400">
+            <i class="fa-solid fa-cash-register text-base"></i>
+            <span>Ventas</span>
+        </button>
+        <button onclick="switchTab('purchases')" id="mnav-purchases" class="flex flex-col items-center p-1 text-slate-400">
+            <i class="fa-solid fa-truck-ramp-box text-base"></i>
+            <span>Compras</span>
+        </button>
+        <button onclick="switchTab('kardex')" id="mnav-kardex" class="flex flex-col items-center p-1 text-slate-400">
+            <i class="fa-solid fa-clipboard-list text-base"></i>
+            <span>Kardex</span>
+        </button>
+        <button onclick="switchTab('analytics')" id="mnav-analytics" class="flex flex-col items-center p-1 text-slate-400">
+            <i class="fa-solid fa-chart-line text-base"></i>
+            <span>Analytics</span>
+        </button>
+        <button onclick="switchTab('forecast')" id="mnav-forecast" class="flex flex-col items-center p-1 text-slate-400">
+            <i class="fa-solid fa-wand-magic-sparkles text-base text-amber-400"></i>
+            <span>IA Pred.</span>
+        </button>
+    </nav>
+
+    <!-- MODAL GUÍA DE DESPLIEGUE EN AZURE -->
+    <div id="modal-azure-guide" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-2xl rounded-2xl border border-slate-800 p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-400 flex items-center justify-center text-xl">
+                        <i class="fa-brands fa-microsoft"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Desplegar QuesoControl AI en Azure (Free Tier)</h3>
+                        <p class="text-xs text-slate-400">Publica esta app gratis con GitHub & Azure Static Web Apps</p>
+                    </div>
+                </div>
+                <button onclick="closeAzureGuideModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs text-slate-300">
+                <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <h4 class="font-bold text-amber-400">Paso 1: Guardar este archivo e ir a GitHub</h4>
+                    <p>1. Descarga este archivo con el nombre <code>index.html</code>.</p>
+                    <p>2. En tu cuenta de <a href="https://github.com" target="_blank" class="text-sky-400 underline">GitHub</a>, crea un nuevo repositorio llamado <code>queso-control-app</code>.</p>
+                    <p>3. Sube este archivo <code>index.html</code> al repositorio.</p>
+                </div>
+
+                <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <h4 class="font-bold text-sky-400">Paso 2: Conectar con Azure Static Web Apps</h4>
+                    <p>1. Ingresa al <a href="https://portal.azure.com" target="_blank" class="text-sky-400 underline">Portal de Azure</a>.</p>
+                    <p>2. Busca <strong>Static Web Apps</strong> y haz clic en <strong>+ Crear</strong>.</p>
+                    <p>3. Selecciona tu suscripción gratuita y el plan de precio <strong>Free ($0 / mes)</strong>.</p>
+                    <p>4. Conecta tu cuenta de GitHub y elige el repositorio <code>queso-control-app</code>.</p>
+                    <p>5. En la sección <em>Build Presets</em> elige <strong>Custom</strong> y deja el App location en <code>/</code>.</p>
+                </div>
+
+                <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800 space-y-2">
+                    <h4 class="font-bold text-emerald-400">Paso 3: ¡Dominio Web Listo para tu Teléfono!</h4>
+                    <p>Azure compilará tu aplicación en menos de 2 minutos y te otorgará una URL segura HTTPS. Podrás abrirla desde el navegador de tu celular para registrar ventas en el local o en bodega.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeAzureGuideModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // APP INITIAL STATE & LOCAL STORAGE MANAGERS
+        const PRESETS_CHEESE_PRICES = {
+            "Gouda": { sell: 8500, cost: 5200 },
+            "Chanco": { sell: 9200, cost: 5800 },
+            "Cabra": { sell: 14500, cost: 9000 },
+            "Mozzarella": { sell: 7800, cost: 4800 },
+            "Brie": { sell: 18000, cost: 11500 }
+        };
+
+        let sales = [];
+        let purchases = [];
+
+        // Global Initialization
+        window.onload = function() {
+            setTodayDefaultDates();
+            loadStateFromStorage();
+            updateSalePricePreset();
+            refreshAllUI();
+        };
+
+        function setTodayDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            const nowTime = new Date().toTimeString().split(' ')[0].substring(0, 5);
+            
+            document.getElementById('sale-date').value = today;
+            document.getElementById('sale-time').value = nowTime;
+            document.getElementById('pur-date').value = today;
+        }
+
+        function loadStateFromStorage() {
+            const storedSales = localStorage.getItem('queso_sales');
+            const storedPurchases = localStorage.getItem('queso_purchases');
+
+            if (storedSales) sales = JSON.parse(storedSales);
+            if (storedPurchases) purchases = JSON.parse(storedPurchases);
+
+            if (sales.length === 0 && purchases.length === 0) {
+                // Initialize with sample demo data if empty
+                loadDemoData();
+            }
+        }
+
+        function saveStateToStorage() {
+            localStorage.setItem('queso_sales', JSON.stringify(sales));
+            localStorage.setItem('queso_purchases', JSON.stringify(purchases));
+            refreshAllUI();
+        }
+
+        function loadDemoData() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            purchases = [
+                { id: 'p-1', date: today, batch: 'LT-101', supplier: 'Quesos del Sur SpA', cheese: 'Gouda', weight: 80.0, costUnit: 5200, totalCost: 416000 },
+                { id: 'p-2', date: today, batch: 'LT-102', supplier: 'Lácteos Artesanales', cheese: 'Chanco', weight: 50.0, costUnit: 5800, totalCost: 290000 },
+                { id: 'p-3', date: today, batch: 'LT-103', supplier: 'Quesería El Capricho', cheese: 'Cabra', weight: 30.0, costUnit: 9000, totalCost: 270000 },
+                { id: 'p-4', date: today, batch: 'LT-104', supplier: 'Distribuidora Láctea', cheese: 'Mozzarella', weight: 60.0, costUnit: 4800, totalCost: 288000 }
+            ];
+
+            sales = [
+                { id: 's-1', date: today, time: '10:30', cheese: 'Gouda', weight: 4.5, priceUnit: 8500, totalSale: 38250, customer: 'Almacén Don Tito', payment: 'Transferencia' },
+                { id: 's-2', date: today, time: '11:15', cheese: 'Chanco', weight: 2.0, priceUnit: 9200, totalSale: 18400, customer: 'Feria Local', payment: 'Efectivo' },
+                { id: 's-3', date: today, time: '12:45', cheese: 'Cabra', weight: 1.2, priceUnit: 14500, totalSale: 17400, customer: 'Marcela Vega', payment: 'Tarjeta' }
+            ];
+
+            saveStateToStorage();
+        }
+
+        function clearAllData() {
+            if(confirm("¿Estás seguro de reiniciar los datos del inventario y ventas?")) {
+                sales = [];
+                purchases = [];
+                saveStateToStorage();
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Desktop Navbar buttons state
+            document.querySelectorAll('#desktop-nav .nav-item').forEach(btn => {
+                btn.classList.remove('active-tab');
+                btn.classList.add('text-slate-400');
+            });
+
+            // Mobile Bottom Navbar state
+            document.querySelectorAll('nav.md\\:hidden button').forEach(btn => {
+                btn.classList.remove('text-cheese-400');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            const dNav = document.getElementById(`dnav-${tabId}`);
+            if (dNav) {
+                dNav.classList.add('active-tab');
+                dNav.classList.remove('text-slate-400');
+            }
+
+            const mNav = document.getElementById(`mnav-${tabId}`);
+            if (mNav) {
+                mNav.classList.add('text-cheese-400');
+                mNav.classList.remove('text-slate-400');
+            }
+
+            if (tabId === 'analytics') renderCharts();
+            if (tabId === 'forecast') renderForecastModule();
+        }
+
+        function updateSalePricePreset() {
+            const cheese = document.getElementById('sale-cheese').value;
+            if (PRESETS_CHEESE_PRICES[cheese]) {
+                document.getElementById('sale-price-unit').value = PRESETS_CHEESE_PRICES[cheese].sell;
+                calculateSaleTotal();
+            }
+        }
+
+        function calculateSaleTotal() {
+            const weight = parseFloat(document.getElementById('sale-weight').value) || 0;
+            const price = parseFloat(document.getElementById('sale-price-unit').value) || 0;
+            const total = weight * price;
+            document.getElementById('sale-total-display').innerText = `$${Math.round(total).toLocaleString()} CLP`;
+        }
+
+        function calculatePurchaseTotal() {
+            const weight = parseFloat(document.getElementById('pur-weight').value) || 0;
+            const cost = parseFloat(document.getElementById('pur-cost-unit').value) || 0;
+            const total = weight * cost;
+            document.getElementById('pur-total-display').innerText = `$${Math.round(total).toLocaleString()} CLP`;
+        }
+
+        // SUBMISSION HANDLERS
+        function handleSaleSubmit(e) {
+            e.preventDefault();
+
+            const cheese = document.getElementById('sale-cheese').value;
+            const weight = parseFloat(document.getElementById('sale-weight').value);
+            const priceUnit = parseFloat(document.getElementById('sale-price-unit').value);
+            const totalSale = weight * priceUnit;
+
+            // Check stock available in Kardex
+            const stockAvailable = getStockForCheese(cheese);
+            if (weight > stockAvailable) {
+                alert(`⚠️ Atención: Estás intentando vender ${weight} kg de Queso ${cheese}, pero solo quedan ${stockAvailable.toFixed(2)} kg en inventario.`);
+            }
+
+            const newSale = {
+                id: `s-${Date.now()}`,
+                date: document.getElementById('sale-date').value,
+                time: document.getElementById('sale-time').value,
+                cheese,
+                weight,
+                priceUnit,
+                totalSale,
+                customer: document.getElementById('sale-customer').value || 'Cliente Mostrador',
+                payment: document.getElementById('sale-payment').value
+            };
+
+            sales.unshift(newSale);
+            saveStateToStorage();
+
+            // Reset inputs
+            document.getElementById('sale-weight').value = '';
+            document.getElementById('sale-customer').value = '';
+            calculateSaleTotal();
+        }
+
+        function handlePurchaseSubmit(e) {
+            e.preventDefault();
+
+            const weight = parseFloat(document.getElementById('pur-weight').value);
+            const costUnit = parseFloat(document.getElementById('pur-cost-unit').value);
+            const totalCost = weight * costUnit;
+
+            const newPurchase = {
+                id: `p-${Date.now()}`,
+                date: document.getElementById('pur-date').value,
+                batch: document.getElementById('pur-batch').value,
+                supplier: document.getElementById('pur-supplier').value,
+                cheese: document.getElementById('pur-cheese').value,
+                weight,
+                costUnit,
+                totalCost
+            };
+
+            purchases.unshift(newPurchase);
+            saveStateToStorage();
+
+            document.getElementById('pur-weight').value = '';
+            document.getElementById('pur-batch').value = '';
+            calculatePurchaseTotal();
+        }
+
+        function deleteSale(id) {
+            sales = sales.filter(s => s.id !== id);
+            saveStateToStorage();
+        }
+
+        function deletePurchase(id) {
+            purchases = purchases.filter(p => p.id !== id);
+            saveStateToStorage();
+        }
+
+        function getStockForCheese(cheeseType) {
+            const totalBought = purchases.filter(p => p.cheese === cheeseType).reduce((acc, p) => acc + p.weight, 0);
+            const totalSold = sales.filter(s => s.cheese === cheeseType).reduce((acc, s) => acc + s.weight, 0);
+            return Math.max(0, totalBought - totalSold);
+        }
+
+        function getWeightedAverageCost(cheeseType) {
+            const cheesePurchases = purchases.filter(p => p.cheese === cheeseType);
+            const totalCost = cheesePurchases.reduce((acc, p) => acc + p.totalCost, 0);
+            const totalWeight = cheesePurchases.reduce((acc, p) => acc + p.weight, 0);
+            if (totalWeight === 0) return PRESETS_CHEESE_PRICES[cheeseType]?.cost || 5000;
+            return totalCost / totalWeight;
+        }
+
+        function refreshAllUI() {
+            renderSalesTable();
+            renderPurchasesTable();
+            renderKardexOverview();
+            renderKardexTable();
+        }
+
+        function renderSalesTable() {
+            const tbody = document.getElementById('sales-table-body');
+            document.getElementById('sales-count-badge').innerText = `${sales.length} Registros`;
+
+            if (sales.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No hay ventas registradas aún.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sales.map(s => `
+                <tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-2.5 font-mono text-[11px] text-slate-400">${s.date} <span class="text-slate-500">${s.time}</span></td>
+                    <td class="p-2.5 font-bold text-slate-200">${s.cheese}</td>
+                    <td class="p-2.5 text-slate-300">${s.customer} <span class="text-[10px] text-slate-500 block">(${s.payment})</span></td>
+                    <td class="p-2.5 font-mono text-amber-400 font-bold">${s.weight.toFixed(2)} Kg</td>
+                    <td class="p-2.5 font-mono">$${s.priceUnit.toLocaleString()}</td>
+                    <td class="p-2.5 font-mono font-extrabold text-cheese-400">$${Math.round(s.totalSale).toLocaleString()}</td>
+                    <td class="p-2.5 text-right">
+                        <button onclick="deleteSale('${s.id}')" class="text-slate-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPurchasesTable() {
+            const tbody = document.getElementById('purchases-table-body');
+            document.getElementById('purchases-count-badge').innerText = `${purchases.length} Lotes`;
+
+            if (purchases.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay compras registradas aún.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = purchases.map(p => `
+                <tr class="hover:bg-slate-900/60 transition">
+                    <td class="p-2.5 font-mono text-[11px] text-slate-400">${p.date}</td>
+                    <td class="p-2.5 font-mono font-bold text-sky-400">${p.batch}</td>
+                    <td class="p-2.5 text-slate-300">${p.supplier}</td>
+                    <td class="p-2.5 font-bold text-slate-200">${p.cheese}</td>
+                    <td class="p-2.5 font-mono text-sky-400 font-bold">${p.weight.toFixed(2)} Kg</td>
+                    <td class="p-2.5 font-mono">$${p.costUnit.toLocaleString()}</td>
+                    <td class="p-2.5 font-mono font-extrabold text-teal-400">$${Math.round(p.totalCost).toLocaleString()}</td>
+                    <td class="p-2.5 text-right">
+                        <button onclick="deletePurchase('${p.id}')" class="text-slate-500 hover:text-rose-400 p-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderKardexOverview() {
+            const varieties = ["Gouda", "Chanco", "Cabra", "Mozzarella", "Brie"];
+            let grandTotalWeight = 0;
+            let grandTotalValuation = 0;
+            let lowStockCount = 0;
+
+            const grid = document.getElementById('cheese-stock-grid');
+            grid.innerHTML = varieties.map(v => {
+                const stock = getStockForCheese(v);
+                const avgCost = getWeightedAverageCost(v);
+                const valuation = stock * avgCost;
+
+                grandTotalWeight += stock;
+                grandTotalValuation += valuation;
+
+                const isLow = stock < 10.0;
+                if (isLow) lowStockCount++;
+
+                return `
+                    <div class="bg-slate-900 p-3 rounded-xl border ${isLow ? 'border-rose-500/40 bg-rose-950/10' : 'border-slate-800'} space-y-1">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 block">${v}</span>
+                        <div class="text-lg font-black ${isLow ? 'text-rose-400' : 'text-cheese-400'} font-mono">${stock.toFixed(2)} Kg</div>
+                        <div class="flex justify-between text-[10px] text-slate-400 border-t border-slate-800/80 pt-1 font-mono">
+                            <span>Val: $${Math.round(valuation).toLocaleString()}</span>
+                            <span>PMP: $${Math.round(avgCost)}/kg</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('kardex-total-weight').innerText = `${grandTotalWeight.toFixed(2)} Kg`;
+            document.getElementById('kardex-total-valuation').innerText = `$${Math.round(grandTotalValuation).toLocaleString()} CLP`;
+            document.getElementById('kardex-low-stock-alert').innerText = `${lowStockCount} Tipos`;
+
+            // Gross Margin Estimate
+            const totalRevenue = sales.reduce((acc, s) => acc + s.totalSale, 0);
+            const totalCostSales = sales.reduce((acc, s) => acc + (s.weight * getWeightedAverageCost(s.cheese)), 0);
+            const margin = totalRevenue > 0 ? ((totalRevenue - totalCostSales) / totalRevenue) * 100 : 0;
+            document.getElementById('kardex-gross-margin').innerText = `${margin.toFixed(1)}%`;
+        }
+
+        function renderKardexTable() {
+            const filter = document.getElementById('kardex-filter-cheese').value;
+            const tbody = document.getElementById('kardex-table-body');
+
+            // Combine sales and purchases into a single chronological ledger
+            let ledger = [];
+
+            purchases.forEach(p => {
+                if (filter === 'ALL' || p.cheese === filter) {
+                    ledger.push({
+                        date: p.date,
+                        type: 'COMPRA (Entrada)',
+                        cheese: p.cheese,
+                        detail: `Proveedor: ${p.supplier} (Lote: ${p.batch})`,
+                        inKg: p.weight,
+                        outKg: 0,
+                        unitPrice: p.costUnit,
+                        isEntry: true
+                    });
+                }
+            });
+
+            sales.forEach(s => {
+                if (filter === 'ALL' || s.cheese === filter) {
+                    ledger.push({
+                        date: `${s.date} ${s.time}`,
+                        type: 'VENTA (Salida)',
+                        cheese: s.cheese,
+                        detail: `Cliente: ${s.customer}`,
+                        inKg: 0,
+                        outKg: s.weight,
+                        unitPrice: s.priceUnit,
+                        isEntry: false
+                    });
+                }
+            });
+
+            // Sort chronological
+            ledger.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            if (ledger.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay movimientos registrados en el Kardex.</td></tr>`;
+                return;
+            }
+
+            let runningBalance = 0;
+            tbody.innerHTML = ledger.map(m => {
+                if (m.isEntry) runningBalance += m.inKg;
+                else runningBalance = Math.max(0, runningBalance - m.outKg);
+
+                return `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-2.5 font-mono text-slate-400">${m.date}</td>
+                        <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.isEntry ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}">${m.type}</span></td>
+                        <td class="p-2.5 font-bold text-slate-200">${m.cheese}</td>
+                        <td class="p-2.5 text-slate-300 text-[11px]">${m.detail}</td>
+                        <td class="p-2.5 font-mono text-center font-bold text-emerald-400 bg-emerald-950/20">${m.inKg > 0 ? `${m.inKg.toFixed(2)} Kg` : '-'}</td>
+                        <td class="p-2.5 font-mono text-center font-bold text-rose-400 bg-rose-950/20">${m.outKg > 0 ? `${m.outKg.toFixed(2)} Kg` : '-'}</td>
+                        <td class="p-2.5 font-mono text-center font-bold text-amber-400 bg-amber-950/20">${runningBalance.toFixed(2)} Kg</td>
+                        <td class="p-2.5 font-mono text-right">$${m.unitPrice.toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        let revenueCostChartInstance = null;
+        let cheesePieChartInstance = null;
+
+        function renderCharts() {
+            // Chart 1: Revenue vs Cost
+            const ctx1 = document.getElementById('chart-revenue-cost').getContext('2d');
+            if (revenueCostChartInstance) revenueCostChartInstance.destroy();
+
+            const totalRev = sales.reduce((acc, s) => acc + s.totalSale, 0);
+            const totalPur = purchases.reduce((acc, p) => acc + p.totalCost, 0);
+
+            revenueCostChartInstance = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Acumulado'],
+                    datasets: [
+                        { label: 'Ventas Totales ($)', data: [totalRev], backgroundColor: '#facc15' },
+                        { label: 'Compras / Costos ($)', data: [totalPur], backgroundColor: '#38bdf8' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } }
+                    }
+                }
+            });
+
+            // Chart 2: Cheese Sales Distribution
+            const ctx2 = document.getElementById('chart-cheese-distribution').getContext('2d');
+            if (cheesePieChartInstance) cheesePieChartInstance.destroy();
+
+            const varieties = ["Gouda", "Chanco", "Cabra", "Mozzarella", "Brie"];
+            const salesKgData = varieties.map(v => sales.filter(s => s.cheese === v).reduce((acc, s) => acc + s.weight, 0));
+
+            cheesePieChartInstance = new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: varieties,
+                    datasets: [{
+                        data: salesKgData,
+                        backgroundColor: ['#facc15', '#ca8a04', '#a16207', '#38bdf8', '#34d399']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }
+                }
+            });
+        }
+
+        function renderForecastModule() {
+            const container = document.getElementById('forecast-cards-container');
+            const varieties = ["Gouda", "Chanco", "Cabra", "Mozzarella", "Brie"];
+
+            container.innerHTML = varieties.map(v => {
+                const stock = getStockForCheese(v);
+                const totalSold = sales.filter(s => s.cheese === v).reduce((acc, s) => acc + s.weight, 0);
+                
+                // Estimate daily consumption (assuming data over 7-day span or default 2kg/day)
+                const dailyRate = Math.max(0.5, totalSold / 7);
+                const daysLeft = stock / dailyRate;
+
+                const forecast7d = dailyRate * 7;
+                const forecast30d = dailyRate * 30;
+
+                const restockNeeded = daysLeft < 5;
+                const suggestedRestockKg = Math.ceil(forecast30d - stock);
+
+                return `
+                    <div class="bg-slate-900 p-4 rounded-xl border ${restockNeeded ? 'border-rose-500/40 bg-rose-950/10' : 'border-slate-800'} space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h4 class="font-bold text-white text-sm">${v}</h4>
+                            <span class="text-[10px] font-mono px-2 py-0.5 rounded ${restockNeeded ? 'bg-rose-500/20 text-rose-300' : 'bg-emerald-500/20 text-emerald-300'}">
+                                ${restockNeeded ? '¡Reabastecer!' : 'Stock Saludable'}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Stock Actual</span>
+                                <span class="font-bold font-mono text-amber-400">${stock.toFixed(2)} Kg</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[10px]">Ritmo Diario</span>
+                                <span class="font-bold font-mono text-slate-200">${dailyRate.toFixed(2)} Kg/día</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1 text-[11px]">
+                            <div class="flex justify-between text-slate-300">
+                                <span>Demanda 7 Días:</span>
+                                <span class="font-mono font-bold text-sky-400">${forecast7d.toFixed(1)} Kg</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span>Demanda 30 Días:</span>
+                                <span class="font-mono font-bold text-sky-400">${forecast30d.toFixed(1)} Kg</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300 border-t border-slate-800 pt-1">
+                                <span>Autonomía Stock:</span>
+                                <span class="font-mono font-bold ${daysLeft < 5 ? 'text-rose-400' : 'text-emerald-400'}">${daysLeft.toFixed(1)} Días</span>
+                            </div>
+                        </div>
+
+                        ${restockNeeded ? `
+                            <div class="text-[10px] text-rose-300 bg-rose-900/20 p-2 rounded border border-rose-500/30 flex items-center justify-between">
+                                <span>Sugerido comprar:</span>
+                                <strong class="font-mono text-xs text-rose-400">+${Math.max(10, suggestedRestockKg)} Kg</strong>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // AZURE MODAL CONTROLS
+        function openAzureGuideModal() {
+            document.getElementById('modal-azure-guide').classList.remove('hidden');
+        }
+
+        function closeAzureGuideModal() {
+            document.getElementById('modal-azure-guide').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
