@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuesoControl AI - Gestión de Quesos & Kardex con Merma</title>
+    <title>QuesoControl AI - Gestión de Quesos & Kardex (Modo Oscuro)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -13,25 +13,25 @@
     <style>
         .active-tab {
             border-bottom: 3px solid #f59e0b;
-            color: #d97706;
+            color: #fbbf24;
             font-weight: 600;
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen font-sans flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
 
     <!-- HEADER / NAVIGATION -->
-    <header class="bg-amber-500 text-white shadow-md sticky top-0 z-50">
+    <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center space-x-3">
-                <i data-lucide="cheese" class="w-8 h-8 text-amber-100"></i>
+                <i data-lucide="cheese" class="w-8 h-8 text-amber-400"></i>
                 <div>
-                    <h1 class="text-xl font-bold leading-none">QuesoControl AI</h1>
-                    <span class="text-xs text-amber-100 font-medium">Kardex, Mermas & Predicción</span>
+                    <h1 class="text-xl font-bold leading-none text-slate-100">QuesoControl AI</h1>
+                    <span class="text-xs text-amber-400 font-medium">Kardex, Mermas & Analytics</span>
                 </div>
             </div>
             <div class="flex items-center space-x-2">
-                <button onclick="showAzureGuide()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow-sm">
+                <button onclick="showAzureGuide()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow-sm">
                     <i data-lucide="cloud" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">Despliegue Azure</span>
                 </button>
@@ -39,25 +39,25 @@
         </div>
 
         <!-- NAV TABS -->
-        <nav class="bg-amber-600 text-amber-100 text-sm overflow-x-auto">
+        <nav class="bg-slate-900/90 border-t border-slate-800 text-slate-400 text-sm overflow-x-auto">
             <div class="max-w-7xl mx-auto px-4 flex space-x-6 whitespace-nowrap">
-                <button onclick="switchTab('ventas')" id="tab-ventas" class="py-2.5 px-1 active-tab flex items-center space-x-2">
+                <button onclick="switchTab('ventas')" id="tab-ventas" class="py-2.5 px-1 active-tab flex items-center space-x-2 hover:text-amber-400 transition">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                     <span>Ventas</span>
                 </button>
-                <button onclick="switchTab('compras')" id="tab-compras" class="py-2.5 px-1 flex items-center space-x-2">
+                <button onclick="switchTab('compras')" id="tab-compras" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
                     <i data-lucide="truck" class="w-4 h-4"></i>
                     <span>Compras & Bodega</span>
                 </button>
-                <button onclick="switchTab('traspasos')" id="tab-traspasos" class="py-2.5 px-1 flex items-center space-x-2">
+                <button onclick="switchTab('traspasos')" id="tab-traspasos" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
                     <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
                     <span>Traspasos / Mermas</span>
                 </button>
-                <button onclick="switchTab('kardex')" id="tab-kardex" class="py-2.5 px-1 flex items-center space-x-2">
+                <button onclick="switchTab('kardex')" id="tab-kardex" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
                     <i data-lucide="clipboard-list" class="w-4 h-4"></i>
                     <span>Kardex Existencias</span>
                 </button>
-                <button onclick="switchTab('reportes')" id="tab-reportes" class="py-2.5 px-1 flex items-center space-x-2">
+                <button onclick="switchTab('reportes')" id="tab-reportes" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
                     <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
                     <span>Reportes & IA</span>
                 </button>
@@ -70,30 +70,30 @@
 
         <!-- METRIC RESUME BAR -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <div class="text-slate-500 text-xs font-medium mb-1">Stock Bodega</div>
-                <div class="text-xl font-bold text-slate-800" id="stat-stock-bodega">0.00 kg</div>
-                <div class="text-xs text-amber-600 font-medium">En Maduración</div>
+            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
+                <div class="text-slate-400 text-xs font-medium mb-1">Stock Bodega</div>
+                <div class="text-xl font-bold text-amber-400" id="stat-stock-bodega">0.00 kg</div>
+                <div class="text-xs text-slate-500 font-medium">En Maduración</div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <div class="text-slate-500 text-xs font-medium mb-1">Stock Sala Ventas</div>
-                <div class="text-xl font-bold text-emerald-600" id="stat-stock-sala">0.00 kg</div>
-                <div class="text-xs text-slate-400 font-medium">Disponible Venta</div>
+            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
+                <div class="text-slate-400 text-xs font-medium mb-1">Stock Sala Ventas</div>
+                <div class="text-xl font-bold text-emerald-400" id="stat-stock-sala">0.00 kg</div>
+                <div class="text-xs text-slate-500 font-medium">Disponible Venta</div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <div class="text-slate-500 text-xs font-medium mb-1">Merma Acumulada</div>
-                <div class="text-xl font-bold text-rose-600" id="stat-merma-total">0.00 kg</div>
+            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
+                <div class="text-slate-400 text-xs font-medium mb-1">Merma Acumulada</div>
+                <div class="text-xl font-bold text-rose-400" id="stat-merma-total">0.00 kg</div>
                 <div class="text-xs text-rose-500 font-medium" id="stat-merma-pct">0.0% Pérdida</div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                <div class="text-slate-500 text-xs font-medium mb-1">Ventas del Mes</div>
-                <div class="text-xl font-bold text-blue-600" id="stat-ventas-total">$0</div>
-                <div class="text-xs text-slate-400 font-medium" id="stat-ventas-kg">0 kg vendidos</div>
+            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
+                <div class="text-slate-400 text-xs font-medium mb-1">Ventas del Mes</div>
+                <div class="text-xl font-bold text-blue-400" id="stat-ventas-total">$0</div>
+                <div class="text-xs text-slate-500 font-medium" id="stat-ventas-kg">0 kg vendidos</div>
             </div>
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 col-span-2 md:col-span-1">
-                <div class="text-slate-500 text-xs font-medium mb-1">Costo Real / Kg</div>
-                <div class="text-xl font-bold text-slate-700" id="stat-costo-promedio">$0 /kg</div>
-                <div class="text-xs text-slate-400 font-medium">Ajustado por Merma</div>
+            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800 col-span-2 md:col-span-1">
+                <div class="text-slate-400 text-xs font-medium mb-1">Costo Real / Kg</div>
+                <div class="text-xl font-bold text-slate-200" id="stat-costo-promedio">$0 /kg</div>
+                <div class="text-xs text-slate-500 font-medium">Ajustado por Merma</div>
             </div>
         </div>
 
@@ -101,26 +101,26 @@
         <section id="sec-ventas" class="space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- FORMULARIO VENTA -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="plus-circle" class="text-amber-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
+                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="plus-circle" class="text-amber-400"></i>
                         <span>Registrar Venta</span>
                     </h2>
                     <form id="form-venta" onsubmit="registrarVenta(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Fecha</label>
-                                <input type="date" id="vta-fecha" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha</label>
+                                <input type="date" id="vta-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Hora</label>
-                                <input type="time" id="vta-hora" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Hora</label>
+                                <input type="time" id="vta-hora" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Producto / Variedad</label>
-                            <select id="vta-producto" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Producto / Variedad</label>
+                            <select id="vta-producto" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                                 <option value="Queso Gouda Mantecoso">Queso Gouda Mantecoso</option>
                                 <option value="Queso Chanco Tradicional">Queso Chanco Tradicional</option>
                                 <option value="Queso Parmesano Madurado">Queso Parmesano Madurado</option>
@@ -130,28 +130,28 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Peso (Kg)</label>
-                                <input type="number" step="0.001" id="vta-peso" oninput="calcularTotalVenta()" placeholder="0.000" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Peso (Kg)</label>
+                                <input type="number" step="0.001" id="vta-peso" oninput="calcularTotalVenta()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Precio / Kg ($)</label>
-                                <input type="number" id="vta-precio-kg" oninput="calcularTotalVenta()" placeholder="8500" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Precio / Kg ($)</label>
+                                <input type="number" id="vta-precio-kg" oninput="calcularTotalVenta()" placeholder="8500" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Total Venta ($)</label>
-                            <input type="number" id="vta-total" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-sm font-bold text-emerald-700 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Total Venta ($)</label>
+                            <input type="number" id="vta-total" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-emerald-400 outline-none">
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Cliente</label>
-                                <input type="text" id="vta-cliente" placeholder="Nombre cliente" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Cliente</label>
+                                <input type="text" id="vta-cliente" placeholder="Nombre cliente" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Pago</label>
-                                <select id="vta-pago" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Pago</label>
+                                <select id="vta-pago" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                                     <option value="Efectivo">Efectivo</option>
                                     <option value="Transferencia">Transferencia</option>
                                     <option value="Débito/Crédito">Débito/Crédito</option>
@@ -159,7 +159,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
                             <i data-lucide="check"></i>
                             <span>Registrar Venta</span>
                         </button>
@@ -167,14 +167,14 @@
                 </div>
 
                 <!-- TABLA HISTORIAL DE VENTAS -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="history" class="text-slate-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
+                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="history" class="text-slate-400"></i>
                         <span>Últimas Ventas Registradas</span>
                     </h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-100 text-slate-600 text-xs">
+                            <thead class="bg-slate-950 text-slate-400 text-xs">
                                 <tr>
                                     <th class="p-2.5">Fecha/Hora</th>
                                     <th class="p-2.5">Producto</th>
@@ -184,7 +184,7 @@
                                     <th class="p-2.5 text-right">Total</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbl-ventas-body" class="divide-y divide-slate-200 text-slate-700">
+                            <tbody id="tbl-ventas-body" class="divide-y divide-slate-800 text-slate-300">
                                 <!-- JS Populated -->
                             </tbody>
                         </table>
@@ -197,31 +197,31 @@
         <section id="sec-compras" class="space-y-6 hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- FORMULARIO COMPRA -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="shopping-bag" class="text-blue-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
+                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="shopping-bag" class="text-blue-400"></i>
                         <span>Ingreso de Compra (Bodega)</span>
                     </h2>
                     <form id="form-compra" onsubmit="registrarCompra(event)" class="space-y-4">
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Fecha Compra</label>
-                                <input type="date" id="cmp-fecha" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha Compra</label>
+                                <input type="date" id="cmp-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Lote / Folio</label>
-                                <input type="text" id="cmp-lote" placeholder="LOTE-001" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Lote / Folio</label>
+                                <input type="text" id="cmp-lote" placeholder="LOTE-001" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Proveedor</label>
-                            <input type="text" id="cmp-proveedor" placeholder="Queserías del Sur" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Proveedor</label>
+                            <input type="text" id="cmp-proveedor" placeholder="Queserías del Sur" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Variedad de Queso</label>
-                            <select id="cmp-producto" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Variedad de Queso</label>
+                            <select id="cmp-producto" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                                 <option value="Queso Gouda Mantecoso">Queso Gouda Mantecoso</option>
                                 <option value="Queso Chanco Tradicional">Queso Chanco Tradicional</option>
                                 <option value="Queso Parmesano Madurado">Queso Parmesano Madurado</option>
@@ -231,21 +231,21 @@
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Kilos Comprados</label>
-                                <input type="number" step="0.001" id="cmp-kilos" oninput="calcularTotalCompra()" placeholder="0.000" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Kilos Comprados</label>
+                                <input type="number" step="0.001" id="cmp-kilos" oninput="calcularTotalCompra()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Costo / Kg ($)</label>
-                                <input type="number" id="cmp-costo-kg" oninput="calcularTotalCompra()" placeholder="4500" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Costo / Kg ($)</label>
+                                <input type="number" id="cmp-costo-kg" oninput="calcularTotalCompra()" placeholder="4500" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Total Inversión Compra ($)</label>
-                            <input type="number" id="cmp-total" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-sm font-bold text-slate-800 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Total Inversión Compra ($)</label>
+                            <input type="number" id="cmp-total" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-slate-100 outline-none">
                         </div>
 
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
                             <i data-lucide="download"></i>
                             <span>Ingresar a Bodega</span>
                         </button>
@@ -253,14 +253,14 @@
                 </div>
 
                 <!-- TABLA BODEGA DE LOTES -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="boxes" class="text-slate-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
+                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="boxes" class="text-slate-400"></i>
                         <span>Lotes en Bodega / Maduración</span>
                     </h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-100 text-slate-600 text-xs">
+                            <thead class="bg-slate-950 text-slate-400 text-xs">
                                 <tr>
                                     <th class="p-2.5">Fecha</th>
                                     <th class="p-2.5">Lote / Proveedor</th>
@@ -270,7 +270,7 @@
                                     <th class="p-2.5 text-center">Acción</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbl-compras-body" class="divide-y divide-slate-200 text-slate-700">
+                            <tbody id="tbl-compras-body" class="divide-y divide-slate-800 text-slate-300">
                                 <!-- JS Populated -->
                             </tbody>
                         </table>
@@ -283,54 +283,54 @@
         <section id="sec-traspasos" class="space-y-6 hidden">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- FORMULARIO TRASPASO -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-800 mb-1 flex items-center space-x-2">
-                        <i data-lucide="arrow-right-left" class="text-emerald-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
+                    <h2 class="text-lg font-bold text-slate-100 mb-1 flex items-center space-x-2">
+                        <i data-lucide="arrow-right-left" class="text-emerald-400"></i>
                         <span>Traspaso a Sala de Ventas</span>
                     </h2>
-                    <p class="text-xs text-slate-500 mb-4">Mida la merma por deshidratación/maduración al mover de bodega a vitrina.</p>
+                    <p class="text-xs text-slate-400 mb-4">Mida la merma por deshidratación/maduración al mover de bodega a vitrina.</p>
 
                     <form id="form-traspaso" onsubmit="registrarTraspaso(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Seleccionar Lote de Bodega</label>
-                            <select id="tra-lote-id" onchange="cargarDetalleLoteTraspaso()" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Seleccionar Lote de Bodega</label>
+                            <select id="tra-lote-id" onchange="cargarDetalleLoteTraspaso()" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                                 <option value="">-- Seleccione Lote --</option>
                             </select>
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Fecha Traspaso</label>
-                                <input type="date" id="tra-fecha" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha Traspaso</label>
+                                <input type="date" id="tra-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-slate-600 mb-1">Kg Orig. Lote</label>
-                                <input type="number" step="0.001" id="tra-kg-orig" readonly class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2 text-sm text-slate-500 outline-none">
+                                <label class="block text-xs font-medium text-slate-400 mb-1">Kg Orig. Lote</label>
+                                <input type="number" step="0.001" id="tra-kg-orig" readonly class="w-full bg-slate-950 border border-slate-800 text-slate-500 rounded-lg p-2 text-sm outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Kilos Reales Recibidos en Sala</label>
-                            <input type="number" step="0.001" id="tra-kg-reales" oninput="calcularMermaTraspaso()" placeholder="0.000" required class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <label class="block text-xs font-medium text-slate-400 mb-1">Kilos Reales Recibidos en Sala</label>
+                            <input type="number" step="0.001" id="tra-kg-reales" oninput="calcularMermaTraspaso()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
                         </div>
 
                         <!-- CÁLCULO DE MERMA EN TIEMPO REAL -->
-                        <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 space-y-1">
-                            <div class="flex justify-between text-xs font-semibold text-rose-700">
+                        <div class="bg-rose-950/40 border border-rose-900/50 rounded-lg p-3 space-y-1">
+                            <div class="flex justify-between text-xs font-semibold text-rose-300">
                                 <span>Pérdida por Merma (Kg):</span>
                                 <span id="tra-merma-kg">0.000 kg</span>
                             </div>
-                            <div class="flex justify-between text-xs font-semibold text-rose-700">
+                            <div class="flex justify-between text-xs font-semibold text-rose-300">
                                 <span>% Porcentaje de Merma:</span>
                                 <span id="tra-merma-pct">0.0%</span>
                             </div>
-                            <div class="flex justify-between text-xs font-semibold text-slate-700 border-t border-rose-200 pt-1">
+                            <div class="flex justify-between text-xs font-semibold text-slate-300 border-t border-rose-900/40 pt-1">
                                 <span>Costo Reajustado / Kg:</span>
                                 <span id="tra-costo-reajustado">$0 /kg</span>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
                             <i data-lucide="check-circle-2"></i>
                             <span>Confirmar Traspaso a Sala</span>
                         </button>
@@ -338,24 +338,24 @@
                 </div>
 
                 <!-- HISTORIAL DE TRASPASOS & MERMAS -->
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="trending-down" class="text-rose-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
+                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="trending-down" class="text-rose-400"></i>
                         <span>Histórico de Traspasos & Registro de Mermas</span>
                     </h2>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-100 text-slate-600 text-xs">
+                            <thead class="bg-slate-950 text-slate-400 text-xs">
                                 <tr>
                                     <th class="p-2.5">Fecha</th>
                                     <th class="p-2.5">Lote / Producto</th>
                                     <th class="p-2.5 text-right">Kg Salida Bodega</th>
                                     <th class="p-2.5 text-right">Kg Entrada Sala</th>
-                                    <th class="p-2.5 text-right text-rose-600">Merma (Kg / %)</th>
+                                    <th class="p-2.5 text-right text-rose-400">Merma (Kg / %)</th>
                                     <th class="p-2.5 text-right">Costo Real/Kg</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbl-traspasos-body" class="divide-y divide-slate-200 text-slate-700">
+                            <tbody id="tbl-traspasos-body" class="divide-y divide-slate-800 text-slate-300">
                                 <!-- JS Populated -->
                             </tbody>
                         </table>
@@ -366,39 +366,39 @@
 
         <!-- 4. SECCION KARDEX DETALLADO -->
         <section id="sec-kardex" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-800 flex items-center space-x-2">
-                            <i data-lucide="clipboard-list" class="text-amber-500"></i>
+                        <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
+                            <i data-lucide="clipboard-list" class="text-amber-400"></i>
                             <span>Tarjeta de Existencias (Kardex PMP Contable)</span>
                         </h2>
-                        <p class="text-xs text-slate-500">Relación cronológica de Compras (Entradas Bodega), Traspasos/Mermas y Ventas (Salidas Sala).</p>
+                        <p class="text-xs text-slate-400">Relación cronológica de Compras (Entradas Bodega), Traspasos/Mermas y Ventas (Salidas Sala).</p>
                     </div>
                     <div class="flex space-x-2">
-                        <button onclick="filtrarKardex('todos')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200">Todos</button>
-                        <button onclick="filtrarKardex('COMPRA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">Compras</button>
-                        <button onclick="filtrarKardex('TRASPASO')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100">Traspasos</button>
-                        <button onclick="filtrarKardex('VENTA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100">Ventas</button>
+                        <button onclick="filtrarKardex('todos')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Todos</button>
+                        <button onclick="filtrarKardex('COMPRA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-950/60 text-blue-400 border border-blue-900/50 hover:bg-blue-900/50">Compras</button>
+                        <button onclick="filtrarKardex('TRASPASO')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 hover:bg-emerald-900/50">Traspasos</button>
+                        <button onclick="filtrarKardex('VENTA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-amber-950/60 text-amber-400 border border-amber-900/50 hover:bg-amber-900/50">Ventas</button>
                     </div>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-xs text-left border-collapse">
-                        <thead class="bg-slate-800 text-white uppercase font-medium">
+                        <thead class="bg-slate-950 text-slate-300 uppercase font-medium border-b border-slate-800">
                             <tr>
                                 <th class="p-2.5">Fecha/Hora</th>
                                 <th class="p-2.5">Movimiento</th>
                                 <th class="p-2.5">Detalle / Ref</th>
-                                <th class="p-2.5 text-right bg-blue-900">Entrada (Kg)</th>
-                                <th class="p-2.5 text-right bg-rose-900">Merma (Kg)</th>
-                                <th class="p-2.5 text-right bg-emerald-900">Salida (Kg)</th>
-                                <th class="p-2.5 text-right bg-slate-700">Saldo Sala (Kg)</th>
+                                <th class="p-2.5 text-right text-blue-400">Entrada (Kg)</th>
+                                <th class="p-2.5 text-right text-rose-400">Merma (Kg)</th>
+                                <th class="p-2.5 text-right text-emerald-400">Salida (Kg)</th>
+                                <th class="p-2.5 text-right text-slate-100">Saldo Sala (Kg)</th>
                                 <th class="p-2.5 text-right">Costo PMP/Kg</th>
                                 <th class="p-2.5 text-right">Valor Stock ($)</th>
                             </tr>
                         </thead>
-                        <tbody id="tbl-kardex-body" class="divide-y divide-slate-200 text-slate-700 font-mono">
+                        <tbody id="tbl-kardex-body" class="divide-y divide-slate-800 text-slate-300 font-mono">
                             <!-- JS Populated -->
                         </tbody>
                     </table>
@@ -410,16 +410,16 @@
         <section id="sec-reportes" class="space-y-6 hidden">
             <!-- GRÁFICOS ANALÍTICOS -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="line-chart" class="text-amber-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+                    <h3 class="text-sm font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="line-chart" class="text-amber-400"></i>
                         <span>Ventas vs Compras ($)</span>
                     </h3>
                     <canvas id="chart-ventas-compras" height="220"></canvas>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <h3 class="text-sm font-bold text-slate-800 mb-4 flex items-center space-x-2">
-                        <i data-lucide="pie-chart" class="text-rose-500"></i>
+                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
+                    <h3 class="text-sm font-bold text-slate-100 mb-4 flex items-center space-x-2">
+                        <i data-lucide="pie-chart" class="text-rose-400"></i>
                         <span>Análisis de Mermas por Variedad de Queso</span>
                     </h3>
                     <canvas id="chart-mermas" height="220"></canvas>
@@ -427,32 +427,32 @@
             </div>
 
             <!-- PANEL DE PREDICCIÓN IA DE DEMANDA -->
-            <div class="bg-gradient-to-br from-slate-900 to-amber-950 text-white p-6 rounded-xl shadow-lg border border-amber-900/40">
+            <div class="bg-slate-900 border border-slate-800 text-white p-6 rounded-xl shadow-lg">
                 <div class="flex items-center space-x-3 mb-4">
-                    <div class="p-2 bg-amber-500/20 rounded-lg text-amber-400">
+                    <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
                         <i data-lucide="sparkles" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-bold">Motor Predictivo de Demanda & Reabastecimiento IA</h3>
-                        <p class="text-xs text-amber-200/80">Proyección por regresión lineal basada en velocidad de rotación real de Sala de Ventas.</p>
+                        <h3 class="text-lg font-bold text-slate-100">Motor Predictivo de Demanda & Reabastecimiento IA</h3>
+                        <p class="text-xs text-slate-400">Proyección por regresión lineal basada en velocidad de rotación real de Sala de Ventas.</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div class="bg-white/10 p-4 rounded-lg border border-white/10">
-                        <div class="text-xs text-amber-200">Consumo Diario Promedio</div>
-                        <div class="text-2xl font-bold mt-1" id="pred-consumo-diario">0.00 kg/día</div>
-                        <div class="text-xs text-slate-300 mt-1">Calculado últimos 30 días</div>
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <div class="text-xs text-amber-400">Consumo Diario Promedio</div>
+                        <div class="text-2xl font-bold mt-1 text-slate-100" id="pred-consumo-diario">0.00 kg/día</div>
+                        <div class="text-xs text-slate-500 mt-1">Calculado últimos 30 días</div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-lg border border-white/10">
-                        <div class="text-xs text-amber-200">Autonomía de Stock (Días)</div>
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <div class="text-xs text-amber-400">Autonomía de Stock (Días)</div>
                         <div class="text-2xl font-bold mt-1 text-emerald-400" id="pred-dias-stock">0 días</div>
-                        <div class="text-xs text-slate-300 mt-1">Antes de quiebre de stock</div>
+                        <div class="text-xs text-slate-500 mt-1">Antes de quiebre de stock</div>
                     </div>
-                    <div class="bg-white/10 p-4 rounded-lg border border-white/10">
-                        <div class="text-xs text-amber-200">Sugerencia Recompra considerar Merma</div>
+                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <div class="text-xs text-amber-400">Sugerencia Recompra considerar Merma</div>
                         <div class="text-2xl font-bold mt-1 text-amber-400" id="pred-sugerencia-kg">0.00 kg</div>
-                        <div class="text-xs text-slate-300 mt-1" id="pred-fecha-recompra">Fecha sugerida: --/--</div>
+                        <div class="text-xs text-slate-500 mt-1" id="pred-fecha-recompra">Fecha sugerida: --/--</div>
                     </div>
                 </div>
             </div>
@@ -461,36 +461,36 @@
     </main>
 
     <!-- MODAL INSTRUCCIONES AZURE -->
-    <div id="modal-azure" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white max-w-2xl w-full rounded-2xl shadow-2xl p-6 relative overflow-y-auto max-h-[90vh]">
-            <button onclick="closeAzureGuide()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+    <div id="modal-azure" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-slate-900 max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-800 p-6 relative overflow-y-auto max-h-[90vh]">
+            <button onclick="closeAzureGuide()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
                 <i data-lucide="x" class="w-6 h-6"></i>
             </button>
-            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center space-x-2">
-                <i data-lucide="cloud" class="text-amber-500"></i>
+            <h3 class="text-lg font-bold text-slate-100 mb-2 flex items-center space-x-2">
+                <i data-lucide="cloud" class="text-amber-400"></i>
                 <span>Despliegue Gratis en Azure Static Web Apps</span>
             </h3>
-            <p class="text-xs text-slate-600 mb-4">Sigue estos sencillos pasos para dejar esta app de quesos online y accesible desde tu celular gratis:</p>
+            <p class="text-xs text-slate-400 mb-4">Sigue estos sencillos pasos para dejar esta app de quesos online y accesible desde tu celular gratis:</p>
 
-            <ol class="list-decimal list-inside text-xs space-y-3 text-slate-700 font-medium">
-                <li><b class="text-slate-900">Guarda este archivo:</b> Descarga este código como <code class="bg-slate-100 px-1 py-0.5 rounded text-amber-700">index.html</code>.</li>
-                <li><b class="text-slate-900">Subir a GitHub:</b> Crea un repositorio en <a href="https://github.com" target="_blank" class="text-blue-600 underline">GitHub</a> llamado <code class="bg-slate-100 px-1 py-0.5 rounded">queso-control-app</code> y sube el archivo <code class="bg-slate-100 px-1 py-0.5 rounded">index.html</code>.</li>
-                <li><b class="text-slate-900">Crear Azure Static Web App:</b> Entra al Portal de Azure, busca <b>Static Web Apps</b> y haz clic en <b>Crear</b>.</li>
-                <li><b class="text-slate-900">Conectar repositorio:</b> Selecciona el plan <b>Gratuito (Free)</b>, vincula tu GitHub y selecciona el repositorio de la app.</li>
-                <li><b class="text-slate-900">Listo:</b> Azure te dará un enlace <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-700">https://...azurestaticapps.net</code> para usar la app en tu teléfono o PC.</li>
+            <ol class="list-decimal list-inside text-xs space-y-3 text-slate-300 font-medium">
+                <li><b class="text-slate-100">Guarda este archivo:</b> Descarga este código como <code class="bg-slate-950 px-1 py-0.5 rounded text-amber-400 border border-slate-800">index.html</code>.</li>
+                <li><b class="text-slate-100">Subir a GitHub:</b> Crea un repositorio en <a href="https://github.com" target="_blank" class="text-amber-400 underline">GitHub</a> llamado <code class="bg-slate-950 px-1 py-0.5 rounded border border-slate-800">queso-control-app</code> y sube el archivo <code class="bg-slate-950 px-1 py-0.5 rounded border border-slate-800">index.html</code>.</li>
+                <li><b class="text-slate-100">Crear Azure Static Web App:</b> Entra al Portal de Azure, busca <b>Static Web Apps</b> y haz clic en <b>Crear</b>.</li>
+                <li><b class="text-slate-100">Conectar repositorio:</b> Selecciona el plan <b>Gratuito (Free)</b>, vincula tu GitHub y selecciona el repositorio de la app.</li>
+                <li><b class="text-slate-100">Listo:</b> Azure te dará un enlace <code class="bg-slate-950 px-1 py-0.5 rounded text-emerald-400 border border-slate-800">https://...azurestaticapps.net</code> para usar la app en tu teléfono o PC.</li>
             </ol>
             
             <div class="mt-6 text-right">
-                <button onclick="closeAzureGuide()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-lg text-xs">Entendido</button>
+                <button onclick="closeAzureGuide()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-lg text-xs">Entendido</button>
             </div>
         </div>
     </div>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 text-xs py-4 border-t border-slate-800 mt-auto">
+    <footer class="bg-slate-900 text-slate-500 text-xs py-4 border-t border-slate-800 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
             <div>QuesoControl AI &copy; 2026 - Sistema de Control de Existencias, Mermas & Analytics</div>
-            <div class="flex space-x-4 text-slate-400">
+            <div class="flex space-x-4 text-slate-500">
                 <span>Estado: Azure Cloud Tier Ready</span>
                 <span>•</span>
                 <span>Almacenamiento Local Activo</span>
@@ -706,13 +706,13 @@
         function renderVentasTable() {
             const body = document.getElementById('tbl-ventas-body');
             body.innerHTML = ventas.map(v => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 font-mono text-xs">${v.fecha} ${v.hora}</td>
-                    <td class="p-2.5 font-medium">${v.producto}</td>
-                    <td class="p-2.5 text-slate-500">${v.cliente}</td>
-                    <td class="p-2.5 text-right font-mono font-bold">${v.peso.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono">$${v.precioKg.toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-emerald-600">$${v.total.toLocaleString()}</td>
+                <tr class="hover:bg-slate-800/50">
+                    <td class="p-2.5 font-mono text-xs text-slate-400">${v.fecha} ${v.hora}</td>
+                    <td class="p-2.5 font-medium text-slate-200">${v.producto}</td>
+                    <td class="p-2.5 text-slate-400">${v.cliente}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-slate-100">${v.peso.toFixed(3)}</td>
+                    <td class="p-2.5 text-right font-mono text-slate-300">$${v.precioKg.toLocaleString()}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-emerald-400">$${v.total.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
@@ -720,14 +720,14 @@
         function renderComprasTable() {
             const body = document.getElementById('tbl-compras-body');
             body.innerHTML = compras.map(c => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 font-mono text-xs">${c.fecha}</td>
-                    <td class="p-2.5"><span class="font-bold text-slate-800">${c.lote}</span> <span class="text-xs text-slate-400">(${c.proveedor})</span></td>
-                    <td class="p-2.5">${c.producto}</td>
-                    <td class="p-2.5 text-right font-mono">${c.kilos.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-amber-600">${c.kgRemanente.toFixed(3)}</td>
+                <tr class="hover:bg-slate-800/50">
+                    <td class="p-2.5 font-mono text-xs text-slate-400">${c.fecha}</td>
+                    <td class="p-2.5"><span class="font-bold text-slate-100">${c.lote}</span> <span class="text-xs text-slate-500">(${c.proveedor})</span></td>
+                    <td class="p-2.5 text-slate-300">${c.producto}</td>
+                    <td class="p-2.5 text-right font-mono text-slate-300">${c.kilos.toFixed(3)}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-amber-400">${c.kgRemanente.toFixed(3)}</td>
                     <td class="p-2.5 text-center">
-                        ${c.kgRemanente > 0 ? `<button onclick="switchTab('traspasos')" class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded hover:bg-emerald-200">➡️ Traspasar</button>` : `<span class="text-xs text-slate-400">En Sala</span>`}
+                        ${c.kgRemanente > 0 ? `<button onclick="switchTab('traspasos')" class="text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 px-2 py-1 rounded hover:bg-emerald-900/50 transition">➡️ Traspasar</button>` : `<span class="text-xs text-slate-500">En Sala</span>`}
                     </td>
                 </tr>
             `).join('');
@@ -744,13 +744,13 @@
         function renderTraspasosTable() {
             const body = document.getElementById('tbl-traspasos-body');
             body.innerHTML = traspasos.map(t => `
-                <tr class="hover:bg-slate-50">
-                    <td class="p-2.5 font-mono text-xs">${t.fecha}</td>
-                    <td class="p-2.5"><span class="font-bold">${t.loteCodigo}</span> - ${t.producto}</td>
-                    <td class="p-2.5 text-right font-mono">${t.kgSalidaBodega.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-emerald-600">${t.kgEntradaSala.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-rose-600">${t.mermaKg.toFixed(3)} (${t.mermaPct.toFixed(1)}%)</td>
-                    <td class="p-2.5 text-right font-mono">$${t.costoReajustadoKg.toLocaleString()}</td>
+                <tr class="hover:bg-slate-800/50">
+                    <td class="p-2.5 font-mono text-xs text-slate-400">${t.fecha}</td>
+                    <td class="p-2.5"><span class="font-bold text-slate-100">${t.loteCodigo}</span> - ${t.producto}</td>
+                    <td class="p-2.5 text-right font-mono text-slate-300">${t.kgSalidaBodega.toFixed(3)}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-emerald-400">${t.kgEntradaSala.toFixed(3)}</td>
+                    <td class="p-2.5 text-right font-mono font-bold text-rose-400">${t.mermaKg.toFixed(3)} (${t.mermaPct.toFixed(1)}%)</td>
+                    <td class="p-2.5 text-right font-mono text-slate-200">$${t.costoReajustadoKg.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
@@ -759,7 +759,6 @@
             const body = document.getElementById('tbl-kardex-body');
             let saldoSala = 0;
 
-            // Unificar todos los eventos cronológicamente
             let eventos = [];
 
             compras.forEach(c => eventos.push({ fecha: c.fecha, tipo: 'COMPRA', ref: `${c.lote} (${c.proveedor})`, entrada: c.kilos, merma: 0, salida: 0, costo: c.costoKg }));
@@ -775,16 +774,16 @@
                 if (e.tipo === 'VENTA') saldoSala -= e.salida;
 
                 return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-2.5 text-slate-500">${e.fecha}</td>
-                        <td class="p-2.5 font-bold text-xs ${e.tipo==='COMPRA'?'text-blue-600':e.tipo==='TRASPASO'?'text-emerald-600':'text-amber-600'}">${e.tipo}</td>
-                        <td class="p-2.5">${e.ref}</td>
-                        <td class="p-2.5 text-right text-blue-600 font-bold">${e.entrada > 0 ? e.entrada.toFixed(3) : '-'}</td>
-                        <td class="p-2.5 text-right text-rose-600 font-bold">${e.merma > 0 ? e.merma.toFixed(3) : '-'}</td>
-                        <td class="p-2.5 text-right text-emerald-600 font-bold">${e.salida > 0 ? e.salida.toFixed(3) : '-'}</td>
-                        <td class="p-2.5 text-right font-bold text-slate-900 bg-slate-50">${saldoSala.toFixed(3)}</td>
-                        <td class="p-2.5 text-right">$${e.costo.toLocaleString()}</td>
-                        <td class="p-2.5 text-right font-bold">$${Math.round(saldoSala * e.costo).toLocaleString()}</td>
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="p-2.5 text-slate-400">${e.fecha}</td>
+                        <td class="p-2.5 font-bold text-xs ${e.tipo==='COMPRA'?'text-blue-400':e.tipo==='TRASPASO'?'text-emerald-400':'text-amber-400'}">${e.tipo}</td>
+                        <td class="p-2.5 text-slate-300">${e.ref}</td>
+                        <td class="p-2.5 text-right text-blue-400 font-bold">${e.entrada > 0 ? e.entrada.toFixed(3) : '-'}</td>
+                        <td class="p-2.5 text-right text-rose-400 font-bold">${e.merma > 0 ? e.merma.toFixed(3) : '-'}</td>
+                        <td class="p-2.5 text-right text-emerald-400 font-bold">${e.salida > 0 ? e.salida.toFixed(3) : '-'}</td>
+                        <td class="p-2.5 text-right font-bold text-slate-100 bg-slate-950/40">${saldoSala.toFixed(3)}</td>
+                        <td class="p-2.5 text-right text-slate-300">$${e.costo.toLocaleString()}</td>
+                        <td class="p-2.5 text-right font-bold text-slate-100">$${Math.round(saldoSala * e.costo).toLocaleString()}</td>
                     </tr>
                 `;
             }).join('');
@@ -797,7 +796,7 @@
         // PREDICTIVE MACHINE LEARNING ENGINE
         function renderPredictiveAI() {
             const totalVendidoKg = ventas.reduce((acc, v) => acc + v.peso, 0);
-            const diasActividad = 30; // Ventana de 30 días
+            const diasActividad = 30;
             const consumoDiario = totalVendidoKg / diasActividad;
 
             const totalTraspasadoSala = traspasos.reduce((acc, t) => acc + t.kgEntradaSala, 0);
@@ -805,7 +804,6 @@
 
             const diasStockRemanente = consumoDiario > 0 ? Math.floor(stockSala / consumoDiario) : 0;
             
-            // Sugerencia considerando merma histórica (ej: +8%)
             const mermaPromedio = 0.08;
             const sugerenciaKg = (consumoDiario * 7) * (1 + mermaPromedio); 
 
@@ -818,13 +816,16 @@
             document.getElementById('pred-fecha-recompra').innerText = 'Pedir el: ' + fechaSugerida.toLocaleDateString();
         }
 
-        // CHARTS
+        // CHARTS (CONFIGURED FOR DARK MODE)
         let chartVentasComprasObj = null;
         let chartMermasObj = null;
 
         function initCharts() {
             if(chartVentasComprasObj) chartVentasComprasObj.destroy();
             if(chartMermasObj) chartMermasObj.destroy();
+
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.borderColor = '#334155';
 
             const ctx1 = document.getElementById('chart-ventas-compras').getContext('2d');
             chartVentasComprasObj = new Chart(ctx1, {
@@ -846,7 +847,7 @@
                     labels: ['Queso Gouda', 'Chanco', 'Parmesano', 'Cabra'],
                     datasets: [{
                         data: [4.5, 2.1, 8.3, 1.2],
-                        backgroundColor: ['#f59e0b', '#10b981', '#ef4444', '#8b5cf6']
+                        backgroundColor: ['#f59e0b', '#10b981', '#f43f5e', '#a855f7']
                     }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
