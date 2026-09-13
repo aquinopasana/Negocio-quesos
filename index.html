@@ -1,850 +1,876 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuesoControl AI - Gestión de Quesos & Kardex (Modo Oscuro)</title>
+    <title>QuesoControl AI - ERP, Mermas & Kardex</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cheese: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                            700: '#a16207',
+                            800: '#854d0e',
+                            900: '#713f12',
+                            accent: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
         .active-tab {
-            border-bottom: 3px solid #f59e0b;
-            color: #fbbf24;
-            font-weight: 600;
+            background-color: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            border-color: #eab308;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col pb-16 md:pb-0">
 
-    <!-- HEADER / NAVIGATION -->
-    <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+    <!-- HEADER MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 lg:px-8 py-3">
+        <div class="flex items-center justify-between max-w-7xl mx-auto w-full">
             <div class="flex items-center space-x-3">
-                <i data-lucide="cheese" class="w-8 h-8 text-amber-400"></i>
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cheese-600 to-cheese-400 flex items-center justify-center text-slate-950 shadow-lg shadow-cheese-500/20 font-black text-xl">
+                    <i class="fa-solid fa-cheese"></i>
+                </div>
                 <div>
-                    <h1 class="text-xl font-bold leading-none text-slate-100">QuesoControl AI</h1>
-                    <span class="text-xs text-amber-400 font-medium">Kardex, Mermas & Analytics</span>
+                    <h1 class="text-xl font-extrabold bg-gradient-to-r from-white via-amber-200 to-cheese-400 bg-clip-text text-transparent">QuesoControl AI</h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">ERP, Kardex de Existencias & Mermas</p>
                 </div>
             </div>
+
+            <!-- Header Action Buttons -->
             <div class="flex items-center space-x-2">
-                <button onclick="showAzureGuide()" class="bg-amber-600 hover:bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 transition shadow-sm">
-                    <i data-lucide="cloud" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">Despliegue Azure</span>
+                <button onclick="openAzureGuideModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-sky-900/40 text-sky-300 border border-sky-700/50 hover:bg-sky-800/50 transition flex items-center space-x-1.5">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <i class="fa-brands fa-microsoft text-sky-400 text-sm"></i>
+                    <span class="hidden md:inline">Desplegar en Azure (Free)</span>
                 </button>
             </div>
         </div>
-
-        <!-- NAV TABS -->
-        <nav class="bg-slate-900/90 border-t border-slate-800 text-slate-400 text-sm overflow-x-auto">
-            <div class="max-w-7xl mx-auto px-4 flex space-x-6 whitespace-nowrap">
-                <button onclick="switchTab('ventas')" id="tab-ventas" class="py-2.5 px-1 active-tab flex items-center space-x-2 hover:text-amber-400 transition">
-                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                    <span>Ventas</span>
-                </button>
-                <button onclick="switchTab('compras')" id="tab-compras" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
-                    <i data-lucide="truck" class="w-4 h-4"></i>
-                    <span>Compras & Bodega</span>
-                </button>
-                <button onclick="switchTab('traspasos')" id="tab-traspasos" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
-                    <i data-lucide="arrow-right-left" class="w-4 h-4"></i>
-                    <span>Traspasos / Mermas</span>
-                </button>
-                <button onclick="switchTab('kardex')" id="tab-kardex" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
-                    <i data-lucide="clipboard-list" class="w-4 h-4"></i>
-                    <span>Kardex Existencias</span>
-                </button>
-                <button onclick="switchTab('reportes')" id="tab-reportes" class="py-2.5 px-1 flex items-center space-x-2 hover:text-amber-400 transition">
-                    <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                    <span>Reportes & IA</span>
-                </button>
-            </div>
-        </nav>
     </header>
 
-    <!-- MAIN CONTENT CONTAINER -->
-    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+    <div class="flex flex-1 max-w-7xl w-full mx-auto overflow-hidden">
+        
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="w-64 glass-card border-r border-slate-800 hidden md:flex flex-col justify-between p-4 space-y-4">
+            <nav class="space-y-1.5" id="desktop-nav">
+                <button onclick="switchTab('sales')" id="dnav-sales" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent active-tab">
+                    <i class="fa-solid fa-cash-register text-base w-6 text-center"></i>
+                    <span>Registro de Ventas</span>
+                </button>
+                <button onclick="switchTab('purchases')" id="dnav-purchases" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-truck-ramp-box text-base w-6 text-center"></i>
+                    <span>Compras (Bodega)</span>
+                </button>
+                <button onclick="switchTab('transfers')" id="dnav-transfers" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-arrow-right-arrow-left text-base w-6 text-center text-emerald-400"></i>
+                    <span>Traspasos / Mermas</span>
+                </button>
+                <button onclick="switchTab('kardex')" id="dnav-kardex" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-clipboard-list text-base w-6 text-center"></i>
+                    <span>Kardex de Existencias</span>
+                </button>
+                <button onclick="switchTab('analytics')" id="dnav-analytics" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-chart-line text-base w-6 text-center"></i>
+                    <span>Reportabilidad & KPIs</span>
+                </button>
+                <button onclick="switchTab('forecast')" id="dnav-forecast" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition border border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900">
+                    <i class="fa-solid fa-wand-magic-sparkles text-base w-6 text-center text-amber-400"></i>
+                    <span>Predicción IA Demanda</span>
+                </button>
+            </nav>
 
-        <!-- METRIC RESUME BAR -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Stock Bodega</div>
-                <div class="text-xl font-bold text-amber-400" id="stat-stock-bodega">0.00 kg</div>
-                <div class="text-xs text-slate-500 font-medium">En Maduración</div>
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+                <span class="text-slate-400 font-semibold block text-[11px]">Pruebas y Demostración</span>
+                <button onclick="loadDemoData()" class="w-full py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 rounded-lg font-semibold transition text-[11px] flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Cargar Datos Ejemplo</span>
+                </button>
             </div>
-            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Stock Sala Ventas</div>
-                <div class="text-xl font-bold text-emerald-400" id="stat-stock-sala">0.00 kg</div>
-                <div class="text-xs text-slate-500 font-medium">Disponible Venta</div>
-            </div>
-            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Merma Acumulada</div>
-                <div class="text-xl font-bold text-rose-400" id="stat-merma-total">0.00 kg</div>
-                <div class="text-xs text-rose-500 font-medium" id="stat-merma-pct">0.0% Pérdida</div>
-            </div>
-            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800">
-                <div class="text-slate-400 text-xs font-medium mb-1">Ventas del Mes</div>
-                <div class="text-xl font-bold text-blue-400" id="stat-ventas-total">$0</div>
-                <div class="text-xs text-slate-500 font-medium" id="stat-ventas-kg">0 kg vendidos</div>
-            </div>
-            <div class="bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-800 col-span-2 md:col-span-1">
-                <div class="text-slate-400 text-xs font-medium mb-1">Costo Real / Kg</div>
-                <div class="text-xl font-bold text-slate-200" id="stat-costo-promedio">$0 /kg</div>
-                <div class="text-xs text-slate-500 font-medium">Ajustado por Merma</div>
-            </div>
-        </div>
+        </aside>
 
-        <!-- 1. SECCION VENTAS -->
-        <section id="sec-ventas" class="space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- FORMULARIO VENTA -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="plus-circle" class="text-amber-400"></i>
-                        <span>Registrar Venta</span>
-                    </h2>
-                    <form id="form-venta" onsubmit="registrarVenta(event)" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha</label>
-                                <input type="date" id="vta-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Hora</label>
-                                <input type="time" id="vta-hora" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                        </div>
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
 
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Producto / Variedad</label>
-                            <select id="vta-producto" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                                <option value="Queso Gouda Mantecoso">Queso Gouda Mantecoso</option>
-                                <option value="Queso Chanco Tradicional">Queso Chanco Tradicional</option>
-                                <option value="Queso Parmesano Madurado">Queso Parmesano Madurado</option>
-                                <option value="Queso de Cabra Artesanal">Queso de Cabra Artesanal</option>
-                            </select>
-                        </div>
+            <!-- TAB 1: VENTAS -->
+            <section id="tab-sales" class="tab-content space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-cart-shopping text-cheese-400 mr-2"></i> Puntos de Venta y Despacho
+                        </h2>
+                        <p class="text-xs text-slate-400">Ingresa las ventas de queso calculando totales automáticamente por kilo.</p>
+                    </div>
+                </div>
 
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Peso (Kg)</label>
-                                <input type="number" step="0.001" id="vta-peso" oninput="calcularTotalVenta()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Precio / Kg ($)</label>
-                                <input type="number" id="vta-precio-kg" oninput="calcularTotalVenta()" placeholder="8500" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                            </div>
-                        </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-amber-400 flex items-center border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-plus-circle mr-2"></i> Nueva Venta de Queso
+                        </h3>
 
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Total Venta ($)</label>
-                            <input type="number" id="vta-total" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-emerald-400 outline-none">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Cliente</label>
-                                <input type="text" id="vta-cliente" placeholder="Nombre cliente" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <form id="form-sale" onsubmit="handleSaleSubmit(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Fecha</label>
+                                    <input type="date" id="sale-date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Hora</label>
+                                    <input type="time" id="sale-time" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
                             </div>
+
                             <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Pago</label>
-                                <select id="vta-pago" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
-                                    <option value="Efectivo">Efectivo</option>
-                                    <option value="Transferencia">Transferencia</option>
-                                    <option value="Débito/Crédito">Débito/Crédito</option>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Variedad / Tipo de Queso</label>
+                                <select id="sale-cheese" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                    <option value="Gouda">Queso Gouda Mantecoso</option>
+                                    <option value="Chanco">Queso Chanco Artesanal</option>
+                                    <option value="Cabra">Queso de Cabra Curado</option>
+                                    <option value="Parmensano">Queso Parmesano Madurado</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
-                            <i data-lucide="check"></i>
-                            <span>Registrar Venta</span>
-                        </button>
-                    </form>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Peso Vendido (Kg)</label>
+                                    <input type="number" step="0.001" min="0.01" id="sale-weight" required placeholder="1.250" oninput="calculateSaleTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Precio por Kg ($)</label>
+                                    <input type="number" id="sale-price-unit" required placeholder="8500" oninput="calculateSaleTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900/90 p-3 rounded-xl border border-cheese-500/30 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400">Total Venta:</span>
+                                <span id="sale-total-display" class="text-lg font-black text-cheese-400 font-mono">$0</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Cliente</label>
+                                    <input type="text" id="sale-customer" placeholder="Cliente General" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Pago</label>
+                                    <select id="sale-payment" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-cheese-500 focus:outline-none">
+                                        <option value="Efectivo">Efectivo</option>
+                                        <option value="Transferencia">Transferencia</option>
+                                        <option value="Tarjeta">Débito / Crédito</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cheese-600 to-cheese-500 hover:from-cheese-500 hover:to-cheese-400 text-slate-950 font-extrabold rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>Registrar Venta</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-clock-rotate-left mr-2 text-cheese-400"></i> Histórico de Ventas
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Fecha/Hora</th>
+                                        <th class="p-2.5">Producto</th>
+                                        <th class="p-2.5">Cliente</th>
+                                        <th class="p-2.5">Peso (Kg)</th>
+                                        <th class="p-2.5">Precio/Kg</th>
+                                        <th class="p-2.5">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sales-table-body" class="divide-y divide-slate-800">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: COMPRAS -->
+            <section id="tab-purchases" class="tab-content hidden space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-truck-ramp-box text-sky-400 mr-2"></i> Recepción de Compras (Bodega)
+                        </h2>
+                        <p class="text-xs text-slate-400">Ingresa lotes a bodega para maduración/almacenamiento.</p>
+                    </div>
                 </div>
 
-                <!-- TABLA HISTORIAL DE VENTAS -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="history" class="text-slate-400"></i>
-                        <span>Últimas Ventas Registradas</span>
-                    </h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-sky-400 flex items-center border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-cart-plus mr-2"></i> Nueva Compra a Proveedor
+                        </h3>
+
+                        <form id="form-purchase" onsubmit="handlePurchaseSubmit(event)" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Fecha Compra</label>
+                                    <input type="date" id="pur-date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">N° Lote</label>
+                                    <input type="text" id="pur-batch" required placeholder="LOTE-101" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Proveedor</label>
+                                <input type="text" id="pur-supplier" required placeholder="Queserías del Sur SpA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Variedad de Queso</label>
+                                <select id="pur-cheese" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                    <option value="Gouda">Queso Gouda Mantecoso</option>
+                                    <option value="Chanco">Queso Chanco Artesanal</option>
+                                    <option value="Cabra">Queso de Cabra Curado</option>
+                                    <option value="Parmensano">Queso Parmesano Madurado</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kilos Comprados</label>
+                                    <input type="number" step="0.001" min="0.1" id="pur-weight" required placeholder="50.0" oninput="calculatePurchaseTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Costo por Kg ($)</label>
+                                    <input type="number" id="pur-cost-unit" required placeholder="4800" oninput="calculatePurchaseTotal()" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-sky-500 focus:outline-none">
+                                </div>
+                            </div>
+
+                            <div class="bg-slate-900/90 p-3 rounded-xl border border-sky-500/30 flex items-center justify-between">
+                                <span class="text-xs font-semibold text-slate-400">Total Inversión:</span>
+                                <span id="pur-total-display" class="text-lg font-black text-sky-400 font-mono">$0</span>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-sky-600 to-teal-600 hover:from-sky-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-boxes-packing"></i>
+                                <span>Ingresar a Bodega</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-boxes-stacked mr-2 text-sky-400"></i> Lotes en Bodega / Maduración
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Fecha</th>
+                                        <th class="p-2.5">Lote</th>
+                                        <th class="p-2.5">Proveedor</th>
+                                        <th class="p-2.5">Producto</th>
+                                        <th class="p-2.5">Kg Inicial</th>
+                                        <th class="p-2.5 text-amber-400">Kg Remanente</th>
+                                        <th class="p-2.5 text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchases-table-body" class="divide-y divide-slate-800">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: TRASPASOS & MERMAS -->
+            <section id="tab-transfers" class="tab-content hidden space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-arrow-right-arrow-left text-emerald-400 mr-2"></i> Traspaso a Sala de Ventas & Control de Mermas
+                        </h2>
+                        <p class="text-xs text-slate-400">Mida la pérdida de peso por deshidratación entre bodega y vitrina comercial.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-emerald-400 flex items-center border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-scale-unbalanced mr-2"></i> Registrar Traspaso
+                        </h3>
+
+                        <form id="form-transfer" onsubmit="handleTransferSubmit(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Seleccionar Lote Bodega</label>
+                                <select id="tra-batch-select" onchange="loadTransferBatchDetails()" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                                    <option value="">-- Seleccione Lote --</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Fecha Entrega</label>
+                                    <input type="date" id="tra-date" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kg Orig. Lote</label>
+                                    <input type="number" step="0.001" id="tra-kg-orig" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-500 outline-none">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-300 mb-1">Kilos Reales Ingresados a Sala</label>
+                                <input type="number" step="0.001" id="tra-kg-real" oninput="calculateMermaRealTime()" placeholder="Ej: 18.500" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-emerald-500 focus:outline-none">
+                            </div>
+
+                            <!-- Cálculo en tiempo real de Merma -->
+                            <div class="bg-rose-950/40 border border-rose-900/50 rounded-xl p-3 space-y-1">
+                                <div class="flex justify-between text-xs font-semibold text-rose-300">
+                                    <span>Pérdida por Merma:</span>
+                                    <span id="tra-merma-kg">0.000 Kg</span>
+                                </div>
+                                <div class="flex justify-between text-xs font-semibold text-rose-300">
+                                    <span>Porcentaje de Merma:</span>
+                                    <span id="tra-merma-pct">0.0%</span>
+                                </div>
+                                <div class="flex justify-between text-xs font-semibold text-slate-300 border-t border-rose-900/40 pt-1">
+                                    <span>Costo Reajustado/Kg:</span>
+                                    <span id="tra-costo-reajustado" class="text-amber-400 font-mono">$0 /Kg</span>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold rounded-xl shadow-lg transition flex items-center justify-center space-x-2 text-xs">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>Confirmar Traspaso a Vitrina</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="lg:col-span-2 glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <i class="fa-solid fa-arrow-trend-down mr-2 text-rose-400"></i> Bitácora de Traspasos & Mermas
+                            </h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
+                                    <tr>
+                                        <th class="p-2.5">Fecha</th>
+                                        <th class="p-2.5">Lote / Producto</th>
+                                        <th class="p-2.5">Kg Bodega</th>
+                                        <th class="p-2.5 text-emerald-400">Kg Sala</th>
+                                        <th class="p-2.5 text-rose-400">Merma (Kg / %)</th>
+                                        <th class="p-2.5">Costo Real/Kg</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transfers-table-body" class="divide-y divide-slate-800">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: KARDEX -->
+            <section id="tab-kardex" class="tab-content hidden space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Stock Bodega</span>
+                        <h4 id="kardex-stock-bodega" class="text-2xl font-black text-amber-400 font-mono mt-1">0.00 Kg</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">En Maduración</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Stock Sala Ventas</span>
+                        <h4 id="kardex-stock-sala" class="text-2xl font-black text-emerald-400 font-mono mt-1">0.00 Kg</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">Disponible en Vitrina</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Merma Acumulada</span>
+                        <h4 id="kardex-merma-total" class="text-2xl font-black text-rose-400 font-mono mt-1">0.00 Kg</h4>
+                        <p id="kardex-merma-pct" class="text-[10px] text-rose-500 mt-1">0.0% Pérdida</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl border border-slate-800">
+                        <span class="text-xs font-semibold text-slate-400 uppercase">Costo Real / Kg</span>
+                        <h4 id="kardex-costo-promedio" class="text-2xl font-black text-slate-200 font-mono mt-1">$0</h4>
+                        <p class="text-[10px] text-slate-500 mt-1">PMP Reajustado por Merma</p>
+                    </div>
+                </div>
+
+                <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                        <h3 class="text-sm font-bold text-white flex items-center">
+                            <i class="fa-solid fa-receipt text-amber-400 mr-2"></i> Tarjeta de Existencias Kardex
+                        </h3>
+                    </div>
+
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-950 text-slate-400 text-xs">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase tracking-wider font-semibold">
                                 <tr>
                                     <th class="p-2.5">Fecha/Hora</th>
-                                    <th class="p-2.5">Producto</th>
-                                    <th class="p-2.5">Cliente</th>
-                                    <th class="p-2.5 text-right">Peso (Kg)</th>
-                                    <th class="p-2.5 text-right">Precio/Kg</th>
-                                    <th class="p-2.5 text-right">Total</th>
+                                    <th class="p-2.5">Tipo</th>
+                                    <th class="p-2.5">Detalle</th>
+                                    <th class="p-2.5 text-right text-blue-400">Entrada (Kg)</th>
+                                    <th class="p-2.5 text-right text-rose-400">Merma (Kg)</th>
+                                    <th class="p-2.5 text-right text-emerald-400">Salida (Kg)</th>
+                                    <th class="p-2.5 text-right text-slate-100">Saldo Sala (Kg)</th>
+                                    <th class="p-2.5 text-right">Costo PMP/Kg</th>
                                 </tr>
                             </thead>
-                            <tbody id="tbl-ventas-body" class="divide-y divide-slate-800 text-slate-300">
-                                <!-- JS Populated -->
+                            <tbody id="kardex-table-body" class="divide-y divide-slate-800 font-mono">
+                                <!-- Dynamic Rows -->
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- 2. SECCION COMPRAS & BODEGA -->
-        <section id="sec-compras" class="space-y-6 hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- FORMULARIO COMPRA -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="shopping-bag" class="text-blue-400"></i>
-                        <span>Ingreso de Compra (Bodega)</span>
-                    </h2>
-                    <form id="form-compra" onsubmit="registrarCompra(event)" class="space-y-4">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha Compra</label>
-                                <input type="date" id="cmp-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Lote / Folio</label>
-                                <input type="text" id="cmp-lote" placeholder="LOTE-001" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Proveedor</label>
-                            <input type="text" id="cmp-proveedor" placeholder="Queserías del Sur" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Variedad de Queso</label>
-                            <select id="cmp-producto" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                                <option value="Queso Gouda Mantecoso">Queso Gouda Mantecoso</option>
-                                <option value="Queso Chanco Tradicional">Queso Chanco Tradicional</option>
-                                <option value="Queso Parmesano Madurado">Queso Parmesano Madurado</option>
-                                <option value="Queso de Cabra Artesanal">Queso de Cabra Artesanal</option>
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Kilos Comprados</label>
-                                <input type="number" step="0.001" id="cmp-kilos" oninput="calcularTotalCompra()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Costo / Kg ($)</label>
-                                <input type="number" id="cmp-costo-kg" oninput="calcularTotalCompra()" placeholder="4500" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Total Inversión Compra ($)</label>
-                            <input type="number" id="cmp-total" readonly class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm font-bold text-slate-100 outline-none">
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
-                            <i data-lucide="download"></i>
-                            <span>Ingresar a Bodega</span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- TABLA BODEGA DE LOTES -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="boxes" class="text-slate-400"></i>
-                        <span>Lotes en Bodega / Maduración</span>
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-950 text-slate-400 text-xs">
-                                <tr>
-                                    <th class="p-2.5">Fecha</th>
-                                    <th class="p-2.5">Lote / Proveedor</th>
-                                    <th class="p-2.5">Producto</th>
-                                    <th class="p-2.5 text-right">Kg Inicial</th>
-                                    <th class="p-2.5 text-right">Kg Remanente</th>
-                                    <th class="p-2.5 text-center">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-compras-body" class="divide-y divide-slate-800 text-slate-300">
-                                <!-- JS Populated -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 3. SECCION TRASPASOS & MERMAS -->
-        <section id="sec-traspasos" class="space-y-6 hidden">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- FORMULARIO TRASPASO -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-1">
-                    <h2 class="text-lg font-bold text-slate-100 mb-1 flex items-center space-x-2">
-                        <i data-lucide="arrow-right-left" class="text-emerald-400"></i>
-                        <span>Traspaso a Sala de Ventas</span>
-                    </h2>
-                    <p class="text-xs text-slate-400 mb-4">Mida la merma por deshidratación/maduración al mover de bodega a vitrina.</p>
-
-                    <form id="form-traspaso" onsubmit="registrarTraspaso(event)" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Seleccionar Lote de Bodega</label>
-                            <select id="tra-lote-id" onchange="cargarDetalleLoteTraspaso()" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                                <option value="">-- Seleccione Lote --</option>
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Fecha Traspaso</label>
-                                <input type="date" id="tra-fecha" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-slate-400 mb-1">Kg Orig. Lote</label>
-                                <input type="number" step="0.001" id="tra-kg-orig" readonly class="w-full bg-slate-950 border border-slate-800 text-slate-500 rounded-lg p-2 text-sm outline-none">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-medium text-slate-400 mb-1">Kilos Reales Recibidos en Sala</label>
-                            <input type="number" step="0.001" id="tra-kg-reales" oninput="calcularMermaTraspaso()" placeholder="0.000" required class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                        </div>
-
-                        <!-- CÁLCULO DE MERMA EN TIEMPO REAL -->
-                        <div class="bg-rose-950/40 border border-rose-900/50 rounded-lg p-3 space-y-1">
-                            <div class="flex justify-between text-xs font-semibold text-rose-300">
-                                <span>Pérdida por Merma (Kg):</span>
-                                <span id="tra-merma-kg">0.000 kg</span>
-                            </div>
-                            <div class="flex justify-between text-xs font-semibold text-rose-300">
-                                <span>% Porcentaje de Merma:</span>
-                                <span id="tra-merma-pct">0.0%</span>
-                            </div>
-                            <div class="flex justify-between text-xs font-semibold text-slate-300 border-t border-rose-900/40 pt-1">
-                                <span>Costo Reajustado / Kg:</span>
-                                <span id="tra-costo-reajustado">$0 /kg</span>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-lg text-sm transition shadow-sm flex items-center justify-center space-x-2">
-                            <i data-lucide="check-circle-2"></i>
-                            <span>Confirmar Traspaso a Sala</span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- HISTORIAL DE TRASPASOS & MERMAS -->
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800 lg:col-span-2">
-                    <h2 class="text-lg font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="trending-down" class="text-rose-400"></i>
-                        <span>Histórico de Traspasos & Registro de Mermas</span>
-                    </h2>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left border-collapse">
-                            <thead class="bg-slate-950 text-slate-400 text-xs">
-                                <tr>
-                                    <th class="p-2.5">Fecha</th>
-                                    <th class="p-2.5">Lote / Producto</th>
-                                    <th class="p-2.5 text-right">Kg Salida Bodega</th>
-                                    <th class="p-2.5 text-right">Kg Entrada Sala</th>
-                                    <th class="p-2.5 text-right text-rose-400">Merma (Kg / %)</th>
-                                    <th class="p-2.5 text-right">Costo Real/Kg</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tbl-traspasos-body" class="divide-y divide-slate-800 text-slate-300">
-                                <!-- JS Populated -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. SECCION KARDEX DETALLADO -->
-        <section id="sec-kardex" class="space-y-6 hidden">
-            <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <!-- TAB 5: REPORTABILIDAD & KPIS (GRÁFICOS SIN BUG DE ALTURA) -->
+            <section id="tab-analytics" class="tab-content hidden space-y-6">
+                <div class="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
                     <div>
-                        <h2 class="text-lg font-bold text-slate-100 flex items-center space-x-2">
-                            <i data-lucide="clipboard-list" class="text-amber-400"></i>
-                            <span>Tarjeta de Existencias (Kardex PMP Contable)</span>
+                        <h2 class="text-lg font-bold text-white flex items-center">
+                            <i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i> Dashboard de Analytics y Rentabilidad
                         </h2>
-                        <p class="text-xs text-slate-400">Relación cronológica de Compras (Entradas Bodega), Traspasos/Mermas y Ventas (Salidas Sala).</p>
-                    </div>
-                    <div class="flex space-x-2">
-                        <button onclick="filtrarKardex('todos')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700">Todos</button>
-                        <button onclick="filtrarKardex('COMPRA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-950/60 text-blue-400 border border-blue-900/50 hover:bg-blue-900/50">Compras</button>
-                        <button onclick="filtrarKardex('TRASPASO')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 hover:bg-emerald-900/50">Traspasos</button>
-                        <button onclick="filtrarKardex('VENTA')" class="px-3 py-1 text-xs font-semibold rounded-lg bg-amber-950/60 text-amber-400 border border-amber-900/50 hover:bg-amber-900/50">Ventas</button>
+                        <p class="text-xs text-slate-400">Análisis financiero comparativo entre compras, ventas y distribución.</p>
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-xs text-left border-collapse">
-                        <thead class="bg-slate-950 text-slate-300 uppercase font-medium border-b border-slate-800">
-                            <tr>
-                                <th class="p-2.5">Fecha/Hora</th>
-                                <th class="p-2.5">Movimiento</th>
-                                <th class="p-2.5">Detalle / Ref</th>
-                                <th class="p-2.5 text-right text-blue-400">Entrada (Kg)</th>
-                                <th class="p-2.5 text-right text-rose-400">Merma (Kg)</th>
-                                <th class="p-2.5 text-right text-emerald-400">Salida (Kg)</th>
-                                <th class="p-2.5 text-right text-slate-100">Saldo Sala (Kg)</th>
-                                <th class="p-2.5 text-right">Costo PMP/Kg</th>
-                                <th class="p-2.5 text-right">Valor Stock ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbl-kardex-body" class="divide-y divide-slate-800 text-slate-300 font-mono">
-                            <!-- JS Populated -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-chart-area text-cheese-400 mr-2"></i> Evolución de Ventas vs Compras ($)
+                        </h3>
+                        <!-- Contenedor con altura fija para evitar estiramiento infinito -->
+                        <div class="h-64 relative w-full">
+                            <canvas id="chart-revenue-cost"></canvas>
+                        </div>
+                    </div>
 
-        <!-- 5. SECCION REPORTES & PREDICCIÓN IA -->
-        <section id="sec-reportes" class="space-y-6 hidden">
-            <!-- GRÁFICOS ANALÍTICOS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
-                    <h3 class="text-sm font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="line-chart" class="text-amber-400"></i>
-                        <span>Ventas vs Compras ($)</span>
-                    </h3>
-                    <canvas id="chart-ventas-compras" height="220"></canvas>
+                    <div class="glass-card p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-pie-chart text-sky-400 mr-2"></i> Distribución de Mermas por Variedad
+                        </h3>
+                        <!-- Contenedor con altura fija para evitar estiramiento infinito -->
+                        <div class="h-64 relative w-full flex items-center justify-center">
+                            <canvas id="chart-mermas-distribution"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-800">
-                    <h3 class="text-sm font-bold text-slate-100 mb-4 flex items-center space-x-2">
-                        <i data-lucide="pie-chart" class="text-rose-400"></i>
-                        <span>Análisis de Mermas por Variedad de Queso</span>
-                    </h3>
-                    <canvas id="chart-mermas" height="220"></canvas>
-                </div>
-            </div>
+            </section>
 
-            <!-- PANEL DE PREDICCIÓN IA DE DEMANDA -->
-            <div class="bg-slate-900 border border-slate-800 text-white p-6 rounded-xl shadow-lg">
-                <div class="flex items-center space-x-3 mb-4">
-                    <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400 border border-amber-500/20">
-                        <i data-lucide="sparkles" class="w-6 h-6"></i>
+            <!-- TAB 6: PREDICCIÓN DE DEMANDA E IA -->
+            <section id="tab-forecast" class="tab-content hidden space-y-6">
+                <div class="glass-card p-5 rounded-2xl border border-amber-500/30 space-y-4">
+                    <div class="flex items-center space-x-3 border-b border-slate-800 pb-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Motor Predictivo de Demanda de Quesos</h2>
+                            <p class="text-xs text-slate-400">Algoritmo de estimación de agotamiento de stock y sugerencias de compra</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-100">Motor Predictivo de Demanda & Reabastecimiento IA</h3>
-                        <p class="text-xs text-slate-400">Proyección por regresión lineal basada en velocidad de rotación real de Sala de Ventas.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-amber-400 font-semibold block">Consumo Diario Promedio</span>
+                            <h4 id="pred-consumo-diario" class="text-2xl font-black text-slate-100 font-mono mt-1">0.00 Kg/día</h4>
+                            <span class="text-[10px] text-slate-500">Basado en velocidad de rotación</span>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-amber-400 font-semibold block">Autonomía de Stock</span>
+                            <h4 id="pred-dias-stock" class="text-2xl font-black text-emerald-400 font-mono mt-1">0 Días</h4>
+                            <span class="text-[10px] text-slate-500">Antes de quiebre de stock</span>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                            <span class="text-xs text-amber-400 font-semibold block">Sugerencia de Recompra (+Merma)</span>
+                            <h4 id="pred-sugerencia-kg" class="text-2xl font-black text-amber-400 font-mono mt-1">0.00 Kg</h4>
+                            <span id="pred-fecha-recompra" class="text-[10px] text-slate-400 block mt-1">Fecha: --/--</span>
+                        </div>
                     </div>
                 </div>
+            </section>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        <div class="text-xs text-amber-400">Consumo Diario Promedio</div>
-                        <div class="text-2xl font-bold mt-1 text-slate-100" id="pred-consumo-diario">0.00 kg/día</div>
-                        <div class="text-xs text-slate-500 mt-1">Calculado últimos 30 días</div>
-                    </div>
-                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        <div class="text-xs text-amber-400">Autonomía de Stock (Días)</div>
-                        <div class="text-2xl font-bold mt-1 text-emerald-400" id="pred-dias-stock">0 días</div>
-                        <div class="text-xs text-slate-500 mt-1">Antes de quiebre de stock</div>
-                    </div>
-                    <div class="bg-slate-950 p-4 rounded-lg border border-slate-800">
-                        <div class="text-xs text-amber-400">Sugerencia Recompra considerar Merma</div>
-                        <div class="text-2xl font-bold mt-1 text-amber-400" id="pred-sugerencia-kg">0.00 kg</div>
-                        <div class="text-xs text-slate-500 mt-1" id="pred-fecha-recompra">Fecha sugerida: --/--</div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </main>
+    </div>
 
-    </main>
+    <!-- MOBILE BOTTOM NAVBAR (LAYOUT ORIGINAL RECUPERADO) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 border-t border-slate-800 md:hidden flex justify-around items-center px-2 py-2 backdrop-blur-md text-[10px] font-semibold">
+        <button onclick="switchTab('sales')" id="mnav-sales" class="flex flex-col items-center space-y-1 text-amber-400">
+            <i class="fa-solid fa-cash-register text-base"></i>
+            <span>Ventas</span>
+        </button>
+        <button onclick="switchTab('purchases')" id="mnav-purchases" class="flex flex-col items-center space-y-1 text-slate-400">
+            <i class="fa-solid fa-truck-ramp-box text-base"></i>
+            <span>Compras</span>
+        </button>
+        <button onclick="switchTab('transfers')" id="mnav-transfers" class="flex flex-col items-center space-y-1 text-slate-400">
+            <i class="fa-solid fa-arrow-right-arrow-left text-base text-emerald-400"></i>
+            <span>Traspaso</span>
+        </button>
+        <button onclick="switchTab('kardex')" id="mnav-kardex" class="flex flex-col items-center space-y-1 text-slate-400">
+            <i class="fa-solid fa-clipboard-list text-base"></i>
+            <span>Kardex</span>
+        </button>
+        <button onclick="switchTab('analytics')" id="mnav-analytics" class="flex flex-col items-center space-y-1 text-slate-400">
+            <i class="fa-solid fa-chart-line text-base"></i>
+            <span>Reportes</span>
+        </button>
+        <button onclick="switchTab('forecast')" id="mnav-forecast" class="flex flex-col items-center space-y-1 text-slate-400">
+            <i class="fa-solid fa-wand-magic-sparkles text-base text-amber-400"></i>
+            <span>IA</span>
+        </button>
+    </nav>
 
     <!-- MODAL INSTRUCCIONES AZURE -->
     <div id="modal-azure" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-slate-900 max-w-2xl w-full rounded-2xl shadow-2xl border border-slate-800 p-6 relative overflow-y-auto max-h-[90vh]">
-            <button onclick="closeAzureGuide()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-200">
-                <i data-lucide="x" class="w-6 h-6"></i>
+        <div class="bg-slate-900 max-w-lg w-full rounded-2xl shadow-2xl border border-slate-800 p-6 relative">
+            <button onclick="closeAzureGuideModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 class="text-lg font-bold text-slate-100 mb-2 flex items-center space-x-2">
-                <i data-lucide="cloud" class="text-amber-400"></i>
-                <span>Despliegue Gratis en Azure Static Web Apps</span>
+            <h3 class="text-base font-bold text-white mb-2 flex items-center">
+                <i class="fa-brands fa-microsoft text-sky-400 mr-2"></i> Despliegue Gratis en Azure Static Web Apps
             </h3>
-            <p class="text-xs text-slate-400 mb-4">Sigue estos sencillos pasos para dejar esta app de quesos online y accesible desde tu celular gratis:</p>
+            <p class="text-xs text-slate-400 mb-4">Pasos simples para actualizar o publicar tu aplicación:</p>
 
-            <ol class="list-decimal list-inside text-xs space-y-3 text-slate-300 font-medium">
-                <li><b class="text-slate-100">Guarda este archivo:</b> Descarga este código como <code class="bg-slate-950 px-1 py-0.5 rounded text-amber-400 border border-slate-800">index.html</code>.</li>
-                <li><b class="text-slate-100">Subir a GitHub:</b> Crea un repositorio en <a href="https://github.com" target="_blank" class="text-amber-400 underline">GitHub</a> llamado <code class="bg-slate-950 px-1 py-0.5 rounded border border-slate-800">queso-control-app</code> y sube el archivo <code class="bg-slate-950 px-1 py-0.5 rounded border border-slate-800">index.html</code>.</li>
-                <li><b class="text-slate-100">Crear Azure Static Web App:</b> Entra al Portal de Azure, busca <b>Static Web Apps</b> y haz clic en <b>Crear</b>.</li>
-                <li><b class="text-slate-100">Conectar repositorio:</b> Selecciona el plan <b>Gratuito (Free)</b>, vincula tu GitHub y selecciona el repositorio de la app.</li>
-                <li><b class="text-slate-100">Listo:</b> Azure te dará un enlace <code class="bg-slate-950 px-1 py-0.5 rounded text-emerald-400 border border-slate-800">https://...azurestaticapps.net</code> para usar la app en tu teléfono o PC.</li>
+            <ol class="list-decimal list-inside text-xs space-y-2 text-slate-300">
+                <li>Guarda este código como <code class="text-amber-400 font-mono">index.html</code>.</li>
+                <li>Súbelo a tu repositorio de <code class="text-amber-400 font-mono">GitHub</code>.</li>
+                <li>Conéctalo en el portal de Azure a <b>Static Web Apps</b> (Plan Gratuito).</li>
             </ol>
             
-            <div class="mt-6 text-right">
-                <button onclick="closeAzureGuide()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold px-4 py-2 rounded-lg text-xs">Entendido</button>
+            <div class="mt-5 text-right">
+                <button onclick="closeAzureGuideModal()" class="bg-amber-500 text-slate-950 font-bold px-4 py-1.5 rounded-lg text-xs">Entendido</button>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-500 text-xs py-4 border-t border-slate-800 mt-auto">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>QuesoControl AI &copy; 2026 - Sistema de Control de Existencias, Mermas & Analytics</div>
-            <div class="flex space-x-4 text-slate-500">
-                <span>Estado: Azure Cloud Tier Ready</span>
-                <span>•</span>
-                <span>Almacenamiento Local Activo</span>
-            </div>
-        </div>
-    </footer>
-
-    <!-- SCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // DATA STRUCTURES IN LOCALSTORAGE
-        let compras = JSON.parse(localStorage.getItem('qc_compras')) || [
-            { id: 1, fecha: '2026-03-01', lote: 'LOTE-101', proveedor: 'Lácteos del Valle', producto: 'Queso Gouda Mantecoso', kilos: 25.0, costoKg: 4800, total: 120000, kgRemanente: 5.0 }
+        let purchases = JSON.parse(localStorage.getItem('qc_purchases')) || [
+            { id: 1, date: '2026-03-01', batch: 'LOTE-101', supplier: 'Lácteos del Sur SpA', cheese: 'Gouda', weight: 25.0, costUnit: 4800, total: 120000, remanent: 5.0 }
         ];
 
-        let traspasos = JSON.parse(localStorage.getItem('qc_traspasos')) || [
-            { id: 1, fecha: '2026-03-03', loteId: 1, loteCodigo: 'LOTE-101', producto: 'Queso Gouda Mantecoso', kgSalidaBodega: 20.0, kgEntradaSala: 18.5, mermaKg: 1.5, mermaPct: 7.5, costoReajustadoKg: 5189 }
+        let transfers = JSON.parse(localStorage.getItem('qc_transfers')) || [
+            { id: 1, date: '2026-03-03', batchId: 1, batchCode: 'LOTE-101', cheese: 'Gouda', kgBodega: 20.0, kgSala: 18.5, mermaKg: 1.5, mermaPct: 7.5, costAdjusted: 5189 }
         ];
 
-        let ventas = JSON.parse(localStorage.getItem('qc_ventas')) || [
-            { id: 1, fecha: '2026-03-04', hora: '11:30', producto: 'Queso Gouda Mantecoso', peso: 1.5, precioKg: 8500, total: 12750, cliente: 'Juan Pérez', pago: 'Efectivo' },
-            { id: 2, fecha: '2026-03-05', hora: '16:45', producto: 'Queso Gouda Mantecoso', peso: 2.0, precioKg: 8500, total: 17000, cliente: 'María Soto', pago: 'Débito/Crédito' }
+        let sales = JSON.parse(localStorage.getItem('qc_sales')) || [
+            { id: 1, date: '2026-03-04', time: '11:30', cheese: 'Gouda', weight: 1.5, priceUnit: 8500, total: 12750, customer: 'Juan Pérez', payment: 'Efectivo' }
         ];
 
-        // INITIALIZATION
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            setDefaultDates();
+            initDefaultDates();
             renderAll();
         });
 
-        function setDefaultDates() {
+        function initDefaultDates() {
             const today = new Date().toISOString().split('T')[0];
-            const time = new Date().toTimeString().split(' ')[0].substring(0, 5);
-            
-            if(document.getElementById('vta-fecha')) document.getElementById('vta-fecha').value = today;
-            if(document.getElementById('vta-hora')) document.getElementById('vta-hora').value = time;
-            if(document.getElementById('cmp-fecha')) document.getElementById('cmp-fecha').value = today;
-            if(document.getElementById('tra-fecha')) document.getElementById('tra-fecha').value = today;
+            const time = new Date().toTimeString().split(' ')[0].substring(0,5);
+            if(document.getElementById('sale-date')) document.getElementById('sale-date').value = today;
+            if(document.getElementById('sale-time')) document.getElementById('sale-time').value = time;
+            if(document.getElementById('pur-date')) document.getElementById('pur-date').value = today;
+            if(document.getElementById('tra-date')) document.getElementById('tra-date').value = today;
         }
 
-        // NAVIGATION TABS
-        function switchTab(tab) {
-            ['ventas', 'compras', 'traspasos', 'kardex', 'reportes'].forEach(t => {
-                document.getElementById(`sec-${t}`).classList.add('hidden');
-                document.getElementById(`tab-${t}`).classList.remove('active-tab');
-            });
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
 
-            document.getElementById(`sec-${tab}`).classList.remove('hidden');
-            document.getElementById(`tab-${tab}`).classList.add('active-tab');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active-tab'));
+            const dnav = document.getElementById(`dnav-${tabId}`);
+            if(dnav) dnav.classList.add('active-tab');
 
-            if (tab === 'reportes') initCharts();
+            if (tabId === 'analytics') renderCharts();
+            if (tabId === 'forecast') renderForecast();
         }
 
-        // CALCULATIONS & FORM HELPERS
-        function calcularTotalVenta() {
-            const peso = parseFloat(document.getElementById('vta-peso').value) || 0;
-            const precio = parseFloat(document.getElementById('vta-precio-kg').value) || 0;
-            document.getElementById('vta-total').value = Math.round(peso * precio);
+        function calculateSaleTotal() {
+            const weight = parseFloat(document.getElementById('sale-weight').value) || 0;
+            const price = parseFloat(document.getElementById('sale-price-unit').value) || 0;
+            document.getElementById('sale-total-display').innerText = '$' + Math.round(weight * price).toLocaleString();
         }
 
-        function calcularTotalCompra() {
-            const kilos = parseFloat(document.getElementById('cmp-kilos').value) || 0;
-            const costo = parseFloat(document.getElementById('cmp-costo-kg').value) || 0;
-            document.getElementById('cmp-total').value = Math.round(kilos * costo);
+        function calculatePurchaseTotal() {
+            const weight = parseFloat(document.getElementById('pur-weight').value) || 0;
+            const cost = parseFloat(document.getElementById('pur-cost-unit').value) || 0;
+            document.getElementById('pur-total-display').innerText = '$' + Math.round(weight * cost).toLocaleString();
         }
 
-        function cargarDetalleLoteTraspaso() {
-            const loteId = parseInt(document.getElementById('tra-lote-id').value);
-            const lote = compras.find(c => c.id === loteId);
-            if(lote) {
-                document.getElementById('tra-kg-orig').value = lote.kgRemanente.toFixed(3);
-                calcularMermaTraspaso();
+        function loadTransferBatchDetails() {
+            const batchId = parseInt(document.getElementById('tra-batch-select').value);
+            const p = purchases.find(item => item.id === batchId);
+            if(p) {
+                document.getElementById('tra-kg-orig').value = p.remanent.toFixed(3);
+                calculateMermaRealTime();
             }
         }
 
-        function calcularMermaTraspaso() {
-            const kgOrig = parseFloat(document.getElementById('tra-kg-orig').value) || 0;
-            const kgReales = parseFloat(document.getElementById('tra-kg-reales').value) || 0;
-            
-            const mermaKg = Math.max(0, kgOrig - kgReales);
-            const mermaPct = kgOrig > 0 ? (mermaKg / kgOrig) * 100 : 0;
+        function calculateMermaRealTime() {
+            const orig = parseFloat(document.getElementById('tra-kg-orig').value) || 0;
+            const real = parseFloat(document.getElementById('tra-kg-real').value) || 0;
+            const mermaKg = Math.max(0, orig - real);
+            const mermaPct = orig > 0 ? (mermaKg / orig) * 100 : 0;
 
-            const loteId = parseInt(document.getElementById('tra-lote-id').value);
-            const lote = compras.find(c => c.id === loteId);
-            const costoOriginal = lote ? lote.costoKg : 0;
-            const costoReajustado = kgReales > 0 ? (kgOrig * costoOriginal) / kgReales : costoOriginal;
+            const batchId = parseInt(document.getElementById('tra-batch-select').value);
+            const p = purchases.find(item => item.id === batchId);
+            const costOrig = p ? p.costUnit : 0;
+            const costAdjusted = real > 0 ? (orig * costOrig) / real : costOrig;
 
-            document.getElementById('tra-merma-kg').innerText = mermaKg.toFixed(3) + ' kg';
+            document.getElementById('tra-merma-kg').innerText = mermaKg.toFixed(3) + ' Kg';
             document.getElementById('tra-merma-pct').innerText = mermaPct.toFixed(1) + '%';
-            document.getElementById('tra-costo-reajustado').innerText = '$' + Math.round(costoReajustado).toLocaleString() + ' /kg';
+            document.getElementById('tra-costo-reajustado').innerText = '$' + Math.round(costAdjusted).toLocaleString() + ' /Kg';
         }
 
-        // ACTIONS / REGISTERS
-        function registrarVenta(e) {
+        function handleSaleSubmit(e) {
             e.preventDefault();
-            const nuevaVenta = {
+            const newSale = {
                 id: Date.now(),
-                fecha: document.getElementById('vta-fecha').value,
-                hora: document.getElementById('vta-hora').value,
-                producto: document.getElementById('vta-producto').value,
-                peso: parseFloat(document.getElementById('vta-peso').value),
-                precioKg: parseFloat(document.getElementById('vta-precio-kg').value),
-                total: parseFloat(document.getElementById('vta-total').value),
-                cliente: document.getElementById('vta-cliente').value || 'Cliente General',
-                pago: document.getElementById('vta-pago').value
+                date: document.getElementById('sale-date').value,
+                time: document.getElementById('sale-time').value,
+                cheese: document.getElementById('sale-cheese').value,
+                weight: parseFloat(document.getElementById('sale-weight').value),
+                priceUnit: parseFloat(document.getElementById('sale-price-unit').value),
+                total: Math.round(parseFloat(document.getElementById('sale-weight').value) * parseFloat(document.getElementById('sale-price-unit').value)),
+                customer: document.getElementById('sale-customer').value || 'Cliente General',
+                payment: document.getElementById('sale-payment').value
             };
-
-            ventas.unshift(nuevaVenta);
-            localStorage.setItem('qc_ventas', JSON.stringify(ventas));
-            document.getElementById('form-venta').reset();
-            setDefaultDates();
+            sales.unshift(newSale);
+            localStorage.setItem('qc_sales', JSON.stringify(sales));
+            document.getElementById('form-sale').reset();
+            initDefaultDates();
             renderAll();
-            alert('Venta registrada con éxito');
         }
 
-        function registrarCompra(e) {
+        function handlePurchaseSubmit(e) {
             e.preventDefault();
-            const kilos = parseFloat(document.getElementById('cmp-kilos').value);
-            const nuevaCompra = {
+            const weight = parseFloat(document.getElementById('pur-weight').value);
+            const newPurchase = {
                 id: Date.now(),
-                fecha: document.getElementById('cmp-fecha').value,
-                lote: document.getElementById('cmp-lote').value,
-                proveedor: document.getElementById('cmp-proveedor').value,
-                producto: document.getElementById('cmp-producto').value,
-                kilos: kilos,
-                costoKg: parseFloat(document.getElementById('cmp-costo-kg').value),
-                total: parseFloat(document.getElementById('cmp-total').value),
-                kgRemanente: kilos
+                date: document.getElementById('pur-date').value,
+                batch: document.getElementById('pur-batch').value,
+                supplier: document.getElementById('pur-supplier').value,
+                cheese: document.getElementById('pur-cheese').value,
+                weight: weight,
+                costUnit: parseFloat(document.getElementById('pur-cost-unit').value),
+                total: Math.round(weight * parseFloat(document.getElementById('pur-cost-unit').value)),
+                remanent: weight
             };
-
-            compras.unshift(nuevaCompra);
-            localStorage.setItem('qc_compras', JSON.stringify(compras));
-            document.getElementById('form-compra').reset();
-            setDefaultDates();
+            purchases.unshift(newPurchase);
+            localStorage.setItem('qc_purchases', JSON.stringify(purchases));
+            document.getElementById('form-purchase').reset();
+            initDefaultDates();
             renderAll();
-            alert('Compra e ingreso a Bodega registrado correctamente');
         }
 
-        function registrarTraspaso(e) {
+        function handleTransferSubmit(e) {
             e.preventDefault();
-            const loteId = parseInt(document.getElementById('tra-lote-id').value);
-            const lote = compras.find(c => c.id === loteId);
-            if (!lote) return;
+            const batchId = parseInt(document.getElementById('tra-batch-select').value);
+            const p = purchases.find(item => item.id === batchId);
+            if(!p) return;
 
-            const kgReales = parseFloat(document.getElementById('tra-kg-reales').value);
-            const kgOrig = lote.kgRemanente;
-            const mermaKg = Math.max(0, kgOrig - kgReales);
-            const mermaPct = kgOrig > 0 ? (mermaKg / kgOrig) * 100 : 0;
-            const costoReajustado = kgReales > 0 ? (kgOrig * lote.costoKg) / kgReales : lote.costoKg;
+            const kgReal = parseFloat(document.getElementById('tra-kg-real').value);
+            const orig = p.remanent;
+            const mermaKg = Math.max(0, orig - kgReal);
+            const mermaPct = orig > 0 ? (mermaKg / orig) * 100 : 0;
+            const costAdjusted = kgReal > 0 ? (orig * p.costUnit) / kgReal : p.costUnit;
 
-            const nuevoTraspaso = {
+            const newTransfer = {
                 id: Date.now(),
-                fecha: document.getElementById('tra-fecha').value,
-                loteId: lote.id,
-                loteCodigo: lote.lote,
-                producto: lote.producto,
-                kgSalidaBodega: kgOrig,
-                kgEntradaSala: kgReales,
+                date: document.getElementById('tra-date').value,
+                batchId: p.id,
+                batchCode: p.batch,
+                cheese: p.cheese,
+                kgBodega: orig,
+                kgSala: kgReal,
                 mermaKg: mermaKg,
                 mermaPct: mermaPct,
-                costoReajustadoKg: Math.round(costoReajustado)
+                costAdjusted: Math.round(costAdjusted)
             };
 
-            // Descontar totalmente del lote en bodega
-            lote.kgRemanente = 0;
+            p.remanent = 0;
+            transfers.unshift(newTransfer);
+            localStorage.setItem('qc_purchases', JSON.stringify(purchases));
+            localStorage.setItem('qc_transfers', JSON.stringify(transfers));
 
-            traspasos.unshift(nuevoTraspaso);
-            localStorage.setItem('qc_compras', JSON.stringify(compras));
-            localStorage.setItem('qc_traspasos', JSON.stringify(traspasos));
-
-            document.getElementById('form-traspaso').reset();
-            setDefaultDates();
+            document.getElementById('form-transfer').reset();
+            initDefaultDates();
             renderAll();
-            alert('Traspaso registrado y stock ajustado en Sala de Ventas');
         }
 
-        // RENDER FUNCTIONS
         function renderAll() {
-            renderStats();
-            renderVentasTable();
-            renderComprasTable();
-            renderTraspasosTable();
-            populateTraspasoSelect();
-            renderKardexTable();
-            renderPredictiveAI();
+            renderSalesTable();
+            renderPurchasesTable();
+            renderTransfersTable();
+            populateTransferSelect();
+            renderKardex();
         }
 
-        function renderStats() {
-            const stockBodega = compras.reduce((acc, c) => acc + c.kgRemanente, 0);
-            const totalTraspasadoSala = traspasos.reduce((acc, t) => acc + t.kgEntradaSala, 0);
-            const totalVendido = ventas.reduce((acc, v) => acc + v.peso, 0);
-            const stockSala = Math.max(0, totalTraspasadoSala - totalVendido);
-
-            const mermaTotalKg = traspasos.reduce((acc, t) => acc + t.mermaKg, 0);
-            const totalCompradoBodega = traspasos.reduce((acc, t) => acc + t.kgSalidaBodega, 0);
-            const mermaTotalPct = totalCompradoBodega > 0 ? (mermaTotalKg / totalCompradoBodega) * 100 : 0;
-
-            const totalVentasMonto = ventas.reduce((acc, v) => acc + v.total, 0);
-
-            // Costo Promedio Ponderado Ajustado por Merma
-            const sumaCostoPonderado = traspasos.reduce((acc, t) => acc + (t.kgEntradaSala * t.costoReajustadoKg), 0);
-            const costoPromedioReal = totalTraspasadoSala > 0 ? sumaCostoPonderado / totalTraspasadoSala : 0;
-
-            document.getElementById('stat-stock-bodega').innerText = stockBodega.toFixed(2) + ' kg';
-            document.getElementById('stat-stock-sala').innerText = stockSala.toFixed(2) + ' kg';
-            document.getElementById('stat-merma-total').innerText = mermaTotalKg.toFixed(2) + ' kg';
-            document.getElementById('stat-merma-pct').innerText = mermaTotalPct.toFixed(1) + '% Pérdida';
-            document.getElementById('stat-ventas-total').innerText = '$' + totalVentasMonto.toLocaleString();
-            document.getElementById('stat-ventas-kg').innerText = totalVendido.toFixed(1) + ' kg vendidos';
-            document.getElementById('stat-costo-promedio').innerText = '$' + Math.round(costoPromedioReal).toLocaleString() + ' /kg';
-        }
-
-        function renderVentasTable() {
-            const body = document.getElementById('tbl-ventas-body');
-            body.innerHTML = ventas.map(v => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="p-2.5 font-mono text-xs text-slate-400">${v.fecha} ${v.hora}</td>
-                    <td class="p-2.5 font-medium text-slate-200">${v.producto}</td>
-                    <td class="p-2.5 text-slate-400">${v.cliente}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-slate-100">${v.peso.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono text-slate-300">$${v.precioKg.toLocaleString()}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-emerald-400">$${v.total.toLocaleString()}</td>
+        function renderSalesTable() {
+            const body = document.getElementById('sales-table-body');
+            body.innerHTML = sales.map(s => `
+                <tr class="hover:bg-slate-900/60">
+                    <td class="p-2.5 font-mono text-slate-400">${s.date} ${s.time}</td>
+                    <td class="p-2.5 font-semibold text-white">${s.cheese}</td>
+                    <td class="p-2.5 text-slate-400">${s.customer}</td>
+                    <td class="p-2.5 font-mono text-slate-200">${s.weight.toFixed(3)}</td>
+                    <td class="p-2.5 font-mono text-slate-400">$${s.priceUnit.toLocaleString()}</td>
+                    <td class="p-2.5 font-mono font-bold text-amber-400">$${s.total.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
 
-        function renderComprasTable() {
-            const body = document.getElementById('tbl-compras-body');
-            body.innerHTML = compras.map(c => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="p-2.5 font-mono text-xs text-slate-400">${c.fecha}</td>
-                    <td class="p-2.5"><span class="font-bold text-slate-100">${c.lote}</span> <span class="text-xs text-slate-500">(${c.proveedor})</span></td>
-                    <td class="p-2.5 text-slate-300">${c.producto}</td>
-                    <td class="p-2.5 text-right font-mono text-slate-300">${c.kilos.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-amber-400">${c.kgRemanente.toFixed(3)}</td>
+        function renderPurchasesTable() {
+            const body = document.getElementById('purchases-table-body');
+            body.innerHTML = purchases.map(p => `
+                <tr class="hover:bg-slate-900/60">
+                    <td class="p-2.5 font-mono text-slate-400">${p.date}</td>
+                    <td class="p-2.5 font-bold text-white">${p.batch}</td>
+                    <td class="p-2.5 text-slate-400">${p.supplier}</td>
+                    <td class="p-2.5">${p.cheese}</td>
+                    <td class="p-2.5 font-mono">${p.weight.toFixed(3)}</td>
+                    <td class="p-2.5 font-mono text-amber-400 font-bold">${p.remanent.toFixed(3)}</td>
                     <td class="p-2.5 text-center">
-                        ${c.kgRemanente > 0 ? `<button onclick="switchTab('traspasos')" class="text-xs bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 px-2 py-1 rounded hover:bg-emerald-900/50 transition">➡️ Traspasar</button>` : `<span class="text-xs text-slate-500">En Sala</span>`}
+                        ${p.remanent > 0 ? `<button onclick="switchTab('transfers')" class="text-[10px] bg-emerald-950/60 text-emerald-400 border border-emerald-900/50 px-2 py-0.5 rounded">➡️ Traspasar</button>` : `<span class="text-[10px] text-slate-500">En Sala</span>`}
                     </td>
                 </tr>
             `).join('');
         }
 
-        function populateTraspasoSelect() {
-            const select = document.getElementById('tra-lote-id');
-            const disponles = compras.filter(c => c.kgRemanente > 0);
-            select.innerHTML = '<option value="">-- Seleccione Lote --</option>' + disponles.map(c => `
-                <option value="${c.id}">${c.lote} - ${c.producto} (${c.kgRemanente.toFixed(2)} kg en bodega)</option>
+        function populateTransferSelect() {
+            const select = document.getElementById('tra-batch-select');
+            const disponles = purchases.filter(p => p.remanent > 0);
+            select.innerHTML = '<option value="">-- Seleccione Lote --</option>' + disponles.map(p => `
+                <option value="${p.id}">${p.batch} - ${p.cheese} (${p.remanent.toFixed(2)} Kg en bodega)</option>
             `).join('');
         }
 
-        function renderTraspasosTable() {
-            const body = document.getElementById('tbl-traspasos-body');
-            body.innerHTML = traspasos.map(t => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="p-2.5 font-mono text-xs text-slate-400">${t.fecha}</td>
-                    <td class="p-2.5"><span class="font-bold text-slate-100">${t.loteCodigo}</span> - ${t.producto}</td>
-                    <td class="p-2.5 text-right font-mono text-slate-300">${t.kgSalidaBodega.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-emerald-400">${t.kgEntradaSala.toFixed(3)}</td>
-                    <td class="p-2.5 text-right font-mono font-bold text-rose-400">${t.mermaKg.toFixed(3)} (${t.mermaPct.toFixed(1)}%)</td>
-                    <td class="p-2.5 text-right font-mono text-slate-200">$${t.costoReajustadoKg.toLocaleString()}</td>
+        function renderTransfersTable() {
+            const body = document.getElementById('transfers-table-body');
+            body.innerHTML = transfers.map(t => `
+                <tr class="hover:bg-slate-900/60">
+                    <td class="p-2.5 font-mono text-slate-400">${t.date}</td>
+                    <td class="p-2.5 font-semibold text-white">${t.batchCode} (${t.cheese})</td>
+                    <td class="p-2.5 font-mono">${t.kgBodega.toFixed(3)}</td>
+                    <td class="p-2.5 font-mono text-emerald-400 font-bold">${t.kgSala.toFixed(3)}</td>
+                    <td class="p-2.5 font-mono text-rose-400 font-bold">${t.mermaKg.toFixed(3)} (${t.mermaPct.toFixed(1)}%)</td>
+                    <td class="p-2.5 font-mono text-amber-400">$${t.costAdjusted.toLocaleString()}</td>
                 </tr>
             `).join('');
         }
 
-        function renderKardexTable(filtro = 'todos') {
-            const body = document.getElementById('tbl-kardex-body');
-            let saldoSala = 0;
+        function renderKardex() {
+            const stockBodega = purchases.reduce((acc, p) => acc + p.remanent, 0);
+            const totalTraspasado = transfers.reduce((acc, t) => acc + t.kgSala, 0);
+            const totalVendido = sales.reduce((acc, s) => acc + s.weight, 0);
+            const stockSala = Math.max(0, totalTraspasado - totalVendido);
 
+            const mermaTotal = transfers.reduce((acc, t) => acc + t.mermaKg, 0);
+            const totalComprado = transfers.reduce((acc, t) => acc + t.kgBodega, 0);
+            const mermaPct = totalComprado > 0 ? (mermaTotal / totalComprado) * 100 : 0;
+
+            const sumaCostoPonderado = transfers.reduce((acc, t) => acc + (t.kgSala * t.costAdjusted), 0);
+            const costoPromedio = totalTraspasado > 0 ? sumaCostoPonderado / totalTraspasado : 0;
+
+            document.getElementById('kardex-stock-bodega').innerText = stockBodega.toFixed(2) + ' Kg';
+            document.getElementById('kardex-stock-sala').innerText = stockSala.toFixed(2) + ' Kg';
+            document.getElementById('kardex-merma-total').innerText = mermaTotal.toFixed(2) + ' Kg';
+            document.getElementById('kardex-merma-pct').innerText = mermaPct.toFixed(1) + '% Pérdida';
+            document.getElementById('kardex-costo-promedio').innerText = '$' + Math.round(costoPromedio).toLocaleString();
+
+            // Table Movements
+            let saldo = 0;
             let eventos = [];
-
-            compras.forEach(c => eventos.push({ fecha: c.fecha, tipo: 'COMPRA', ref: `${c.lote} (${c.proveedor})`, entrada: c.kilos, merma: 0, salida: 0, costo: c.costoKg }));
-            traspasos.forEach(t => eventos.push({ fecha: t.fecha, tipo: 'TRASPASO', ref: `Entrada Sala ${t.loteCodigo}`, entrada: t.kgEntradaSala, merma: t.mermaKg, salida: 0, costo: t.costoReajustadoKg }));
-            ventas.forEach(v => eventos.push({ fecha: `${v.fecha} ${v.hora}`, tipo: 'VENTA', ref: `Venta a ${v.cliente}`, entrada: 0, merma: 0, salida: v.peso, costo: v.precioKg }));
+            purchases.forEach(p => eventos.push({ fecha: p.date, tipo: 'COMPRA', ref: `${p.batch} (${p.supplier})`, entrada: p.weight, merma: 0, salida: 0, costo: p.costUnit }));
+            transfers.forEach(t => eventos.push({ fecha: t.date, tipo: 'TRASPASO', ref: `Entrada Sala ${t.batchCode}`, entrada: t.kgSala, merma: t.mermaKg, salida: 0, costo: t.costAdjusted }));
+            sales.forEach(s => eventos.push({ fecha: `${s.date} ${s.time}`, tipo: 'VENTA', ref: `Venta ${s.customer}`, entrada: 0, merma: 0, salida: s.weight, costo: s.priceUnit }));
 
             eventos.sort((a,b) => new Date(a.fecha) - new Date(b.fecha));
 
-            if (filtro !== 'todos') eventos = eventos.filter(e => e.tipo === filtro);
-
+            const body = document.getElementById('kardex-table-body');
             body.innerHTML = eventos.map(e => {
-                if (e.tipo === 'TRASPASO') saldoSala += e.entrada;
-                if (e.tipo === 'VENTA') saldoSala -= e.salida;
-
+                if(e.tipo === 'TRASPASO') saldo += e.entrada;
+                if(e.tipo === 'VENTA') saldo -= e.salida;
                 return `
-                    <tr class="hover:bg-slate-800/50">
+                    <tr class="hover:bg-slate-900/60">
                         <td class="p-2.5 text-slate-400">${e.fecha}</td>
                         <td class="p-2.5 font-bold text-xs ${e.tipo==='COMPRA'?'text-blue-400':e.tipo==='TRASPASO'?'text-emerald-400':'text-amber-400'}">${e.tipo}</td>
-                        <td class="p-2.5 text-slate-300">${e.ref}</td>
+                        <td class="p-2.5 text-slate-300 font-sans">${e.ref}</td>
                         <td class="p-2.5 text-right text-blue-400 font-bold">${e.entrada > 0 ? e.entrada.toFixed(3) : '-'}</td>
                         <td class="p-2.5 text-right text-rose-400 font-bold">${e.merma > 0 ? e.merma.toFixed(3) : '-'}</td>
                         <td class="p-2.5 text-right text-emerald-400 font-bold">${e.salida > 0 ? e.salida.toFixed(3) : '-'}</td>
-                        <td class="p-2.5 text-right font-bold text-slate-100 bg-slate-950/40">${saldoSala.toFixed(3)}</td>
-                        <td class="p-2.5 text-right text-slate-300">$${e.costo.toLocaleString()}</td>
-                        <td class="p-2.5 text-right font-bold text-slate-100">$${Math.round(saldoSala * e.costo).toLocaleString()}</td>
+                        <td class="p-2.5 text-right font-bold text-white bg-slate-900/40">${saldo.toFixed(3)}</td>
+                        <td class="p-2.5 text-right">$${e.costo.toLocaleString()}</td>
                     </tr>
                 `;
             }).join('');
         }
 
-        function filtrarKardex(filtro) {
-            renderKardexTable(filtro);
-        }
+        let chartRevCostObj = null;
+        let chartMermaObj = null;
 
-        // PREDICTIVE MACHINE LEARNING ENGINE
-        function renderPredictiveAI() {
-            const totalVendidoKg = ventas.reduce((acc, v) => acc + v.peso, 0);
-            const diasActividad = 30;
-            const consumoDiario = totalVendidoKg / diasActividad;
-
-            const totalTraspasadoSala = traspasos.reduce((acc, t) => acc + t.kgEntradaSala, 0);
-            const stockSala = Math.max(0, totalTraspasadoSala - totalVendidoKg);
-
-            const diasStockRemanente = consumoDiario > 0 ? Math.floor(stockSala / consumoDiario) : 0;
-            
-            const mermaPromedio = 0.08;
-            const sugerenciaKg = (consumoDiario * 7) * (1 + mermaPromedio); 
-
-            const fechaSugerida = new Date();
-            fechaSugerida.setDate(fechaSugerida.getDate() + Math.max(1, diasStockRemanente - 2));
-
-            document.getElementById('pred-consumo-diario').innerText = consumoDiario.toFixed(2) + ' kg/día';
-            document.getElementById('pred-dias-stock').innerText = diasStockRemanente + ' días';
-            document.getElementById('pred-sugerencia-kg').innerText = sugerenciaKg.toFixed(2) + ' kg';
-            document.getElementById('pred-fecha-recompra').innerText = 'Pedir el: ' + fechaSugerida.toLocaleDateString();
-        }
-
-        // CHARTS (CONFIGURED FOR DARK MODE)
-        let chartVentasComprasObj = null;
-        let chartMermasObj = null;
-
-        function initCharts() {
-            if(chartVentasComprasObj) chartVentasComprasObj.destroy();
-            if(chartMermasObj) chartMermasObj.destroy();
+        function renderCharts() {
+            if(chartRevCostObj) chartRevCostObj.destroy();
+            if(chartMermaObj) chartMermaObj.destroy();
 
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = '#334155';
 
-            const ctx1 = document.getElementById('chart-ventas-compras').getContext('2d');
-            chartVentasComprasObj = new Chart(ctx1, {
+            const ctx1 = document.getElementById('chart-revenue-cost').getContext('2d');
+            chartRevCostObj = new Chart(ctx1, {
                 type: 'bar',
                 data: {
                     labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
                     datasets: [
                         { label: 'Ventas ($)', data: [45000, 89000, 120000, 95000], backgroundColor: '#f59e0b' },
-                        { label: 'Compras ($)', data: [120000, 0, 80000, 0], backgroundColor: '#3b82f6' }
+                        { label: 'Compras ($)', data: [120000, 0, 80000, 0], backgroundColor: '#0ea5e9' }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
-            const ctx2 = document.getElementById('chart-mermas').getContext('2d');
-            chartMermasObj = new Chart(ctx2, {
+            const ctx2 = document.getElementById('chart-mermas-distribution').getContext('2d');
+            chartMermaObj = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Queso Gouda', 'Chanco', 'Parmesano', 'Cabra'],
+                    labels: ['Gouda', 'Chanco', 'Parmesano', 'Cabra'],
                     datasets: [{
                         data: [4.5, 2.1, 8.3, 1.2],
                         backgroundColor: ['#f59e0b', '#10b981', '#f43f5e', '#a855f7']
@@ -854,12 +880,35 @@
             });
         }
 
-        // AZURE MODAL GUIDES
-        function showAzureGuide() {
+        function renderForecast() {
+            const totalVendidoKg = sales.reduce((acc, s) => acc + s.weight, 0);
+            const consumoDiario = totalVendidoKg / 30;
+
+            const totalTraspasado = transfers.reduce((acc, t) => acc + t.kgSala, 0);
+            const stockSala = Math.max(0, totalTraspasado - totalVendidoKg);
+
+            const diasStock = consumoDiario > 0 ? Math.floor(stockSala / consumoDiario) : 0;
+            const sugerenciaKg = (consumoDiario * 7) * 1.08;
+
+            const fechaSugerida = new Date();
+            fechaSugerida.setDate(fechaSugerida.getDate() + Math.max(1, diasStock - 2));
+
+            document.getElementById('pred-consumo-diario').innerText = consumoDiario.toFixed(2) + ' Kg/día';
+            document.getElementById('pred-dias-stock').innerText = diasStock + ' Días';
+            document.getElementById('pred-sugerencia-kg').innerText = sugerenciaKg.toFixed(2) + ' Kg';
+            document.getElementById('pred-fecha-recompra').innerText = 'Fecha sugerida: ' + fechaSugerida.toLocaleDateString();
+        }
+
+        function loadDemoData() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function openAzureGuideModal() {
             document.getElementById('modal-azure').classList.remove('hidden');
         }
 
-        function closeAzureGuide() {
+        function closeAzureGuideModal() {
             document.getElementById('modal-azure').classList.add('hidden');
         }
     </script>
