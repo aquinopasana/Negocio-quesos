@@ -451,7 +451,7 @@
                     <div class="glass-card p-6 rounded-2xl border border-slate-800 space-y-3">
                         <h3 class="text-sm font-bold text-slate-100 flex items-center space-x-2">
                             <i class="fa-solid fa-chart-pie text-rose-400"></i>
-                            <span>Análisis de Mermas por Variedad de Queso</span>
+                            <span>Análisis de Mermas por Variedad de Queso (Kg)</span>
                         </h3>
                         <div class="h-64 relative w-full flex items-center justify-center">
                             <canvas id="chart-mermas"></canvas>
@@ -580,6 +580,14 @@
                 traspasos = data.filter(d => d.tipo === 'TRASPASO');
                 ventas = data.filter(d => d.tipo === 'VENTA');
                 
+                // CÁLCULO DINÁMICO DE REMANENTES EN BODEGA
+                // Se descuenta lo traspasado de cada lote según su ID
+                compras.forEach(c => {
+                    const traspasosDelLote = traspasos.filter(t => String(t.loteId) === String(c.id));
+                    const kgTraspasados = traspasosDelLote.reduce((acc, t) => acc + (t.kgSalidaBodega || 0), 0);
+                    c.kgRemanente = Math.max(0, c.kilos - kgTraspasados);
+                });
+
                 renderAll();
             } catch (error) {
                 console.error("Error conectando con la base de datos de Azure:", error);
@@ -810,8 +818,10 @@
 
         function populateTraspasoSelect() {
             const select = document.getElementById('tra-lote-id');
-            select.innerHTML = '<option value="">-- Seleccione Lote --</option>' + compras.map(c => `
-                <option value="${c.id}">${c.lote} - ${c.producto} (${(c.kgRemanente !== undefined ? c.kgRemanente : c.kilos).toFixed(2)} kg)</option>
+            // Solo mostramos lotes que aún tengan remanente en bodega
+            const lotesDisponibles = compras.filter(c => (c.kgRemanente !== undefined ? c.kgRemanente : c.kilos) > 0);
+            select.innerHTML = '<option value="">-- Seleccione Lote --</option>' + lotesDisponibles.map(c => `
+                <option value="${c.id}">${c.lote} - ${c.producto} (${c.kgRemanente.toFixed(2)} kg remanentes)</option>
             `).join('');
         }
 
@@ -889,6 +899,7 @@
         let chartVentasComprasObj = null;
         let chartMermasObj = null;
 
+        // GRÁFICOS DINÁMICOS CONECTADOS A LOS DATOS REALES DE AZURE
         function initCharts() {
             if(chartVentasComprasObj) chartVentasComprasObj.destroy();
             if(chartMermasObj) chartMermasObj.destroy();
@@ -896,26 +907,47 @@
             Chart.defaults.color = '#94a3b8';
             Chart.defaults.borderColor = '#334155';
 
+            // 1. Totales Reales acumulados
+            const totalVentasMonto = ventas.reduce((acc, v) => acc + (v.total || 0), 0);
+            const totalComprasMonto = compras.reduce((acc, c) => acc + (c.total || 0), 0);
+
             const ctx1 = document.getElementById('chart-ventas-compras').getContext('2d');
             chartVentasComprasObj = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+                    labels: ['Acumulado Total'],
                     datasets: [
-                        { label: 'Ventas ($)', data: [45000, 89000, 120000, 95000], backgroundColor: '#f59e0b' },
-                        { label: 'Compras ($)', data: [120000, 0, 80000, 0], backgroundColor: '#3b82f6' }
+                        { label: 'Ventas ($)', data: [totalVentasMonto], backgroundColor: '#f59e0b' },
+                        { label: 'Compras ($)', data: [totalComprasMonto], backgroundColor: '#3b82f6' }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // 2. Agrupamiento real de mermas por producto
+            const variedades = ['Queso Gouda Mantecoso', 'Queso Chanco Tradicional', 'Queso Parmesano Madurado', 'Queso de Cabra Artesanal'];
+            const mermasPorVariedad = variedades.map(varNombre => {
+                return traspasos
+                    .filter(t => t.producto === varNombre)
+                    .reduce((acc, t) => acc + (t.mermaKg || 0), 0);
             });
 
             const ctx2 = document.getElementById('chart-mermas').getContext('2d');
             chartMermasObj = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Queso Gouda', 'Chanco', 'Parmesano', 'Cabra'],
+                    labels: ['Gouda', 'Chanco', 'Parmesano', 'Cabra'],
                     datasets: [{
-                        data: [4.5, 2.1, 8.3, 1.2],
+                        data: mermasPorVariedad,
                         backgroundColor: ['#f59e0b', '#10b981', '#f43f5e', '#a855f7']
                     }]
                 },
